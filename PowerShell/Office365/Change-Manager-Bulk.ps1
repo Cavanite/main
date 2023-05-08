@@ -24,4 +24,4 @@ foreach ($user in $users) {
     #Completion info in the console for the specified user
     Write-Host "Updated" -ForegroundColor Green
 
-}a
+}
