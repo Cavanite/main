@@ -47,4 +47,5 @@ Set-PSReadLineOption -EditMode Windows
 
 <h2>Repository Contents</h2>
 
-<p>This repository contains a collection of projects where I employ the delightful combination of Oh My Posh, Windows Terminal, and Visual Studio Code. Each project
+<p>This repository contains a collection of projects where I employ the delightful combination of Oh My Posh, Windows Terminal, and Visual Studio Code.</p>
+<p>Happy Coding</p>
