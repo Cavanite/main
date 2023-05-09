@@ -1,4 +1,4 @@
-<h1>Welcome to my PowerShell Project Repository!</h1>
+<h1>Welcome to my PowerShell Repository!</h1>
 
 <p>This repository is dedicated to my exciting projects, where I utilize the power of <a href="https://ohmyposh.dev/">Oh My Posh</a> alongside Windows Terminal and Visual Studio Code. Get ready to dive into a vibrant coding experience!</p>
 
