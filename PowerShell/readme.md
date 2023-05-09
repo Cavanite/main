@@ -13,7 +13,7 @@
 <h2>Why Oh My Posh?</h2>
 
 <p>Oh My Posh has revolutionized my coding environment by adding a touch of color and personalization to my command-line interface. With its extensive theming support and prompt customizability, Oh My Posh makes the coding experience even more enjoyable and visually appealing.</p>
-
+<p>The theme is use is <a href="https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/themes/blue-owl.omp.json">Blue-Owl</a></p>
 <h2>Windows Terminal Setup</h2>
 
 <p>To use Oh My Posh with Windows Terminal, follow these steps:</p>
