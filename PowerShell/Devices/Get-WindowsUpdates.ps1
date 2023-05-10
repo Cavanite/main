@@ -35,13 +35,13 @@ if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
 Import-Module -Name PSWindowsUpdate -Force
 
 # Check for available Windows updates
-$updates = Get-WUList
+$updates = Get-WindowsUpdate -AcceptAll -Install -Verbose -IgnoreReboot -IgnoreRebootRequired
 
 # If updates are available
 if ($updates.Count -gt 0) {
     # Install updates without automatically restarting
     Write-Host "Installing updates..."
-    $installResult = Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -AutoReboot:$false
+    $installResult = Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
 
     # Check for installation errors
     if ($installResult.FailureCount -gt 0) {
