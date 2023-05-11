@@ -3,7 +3,7 @@ $tenantId = Read-Host "Please enter the Azure AD Tenant ID"
 Connect-AzAccount -TenantId $tenantId
 $AzStorageAccountName = Read-Host "Please enter the StorageAccountName"
 $AzresourceGroupName = Read-Host "Please enter the ResourceGroupName"
-test
+
 # Get the storage account key
 $storageAccountName = "$AzStorageAccountName"
 $resourceGroupName = "$AzresourceGroupName"
