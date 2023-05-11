@@ -1,7 +1,6 @@
-#Learning examples
-
-#URL Request + decode lines
 from urllib.request import urlopen
+
+
 story = urlopen('http://sixty-north.com/c/t.txt')
 story_words = []
 for line in story:
@@ -9,3 +8,6 @@ for line in story:
     for word in line_words:
         story_words.append(word)
 story.close()
+
+for word in story_words:
+    print(word)
