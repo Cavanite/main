@@ -8,7 +8,7 @@ Connect-MgGraph -Scope "Device.Read.All","DeviceLocalCredential.Read.All"
 #https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-scenarios-azure-active-directory
 #Show LAPSRetrieve sample app
 $TenantID = (Get-MgContext).TenantId #assumed already done a basic Connect-McGraph
-$LAPSAppID = "1bfbfb4b-9388-4514-92a1-4d34b5effd22" #change this to yours!
+$LAPSAppID = "1bfbfb4b-9388-4514-92a1-4d34b5effd22" #change this to yours! this is an example.
 Connect-MgGraph -TenantID $TenantID -ClientID $LAPSAppID
 
 #Get the device ID for the machine whose passwords you wish to fetch
