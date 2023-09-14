@@ -1,6 +1,6 @@
 # Check winget is installed
 if (-Not (Get-Command -Name winget -ErrorAction SilentlyContinue)) {
-    # Winget is niet geinstalleerd
+    # Winget is not installed.
     #script by Cavanite
    $progressPreference = 'silentlyContinue'
 Write-Information "Downloading WinGet and its dependencies..."
@@ -13,12 +13,12 @@ Add-AppxPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
 
  
 
-    # Install succesvol geweest?
+    # Installation Confirmation
     if ($?) {
-        Write-Host "Winget succesvol geinstalleerd"
+        Write-Host "Winget installed succesfully"
     } else {
         Write-Host "Winget failed"
     }
 } else {
-    Write-Host "Winget is al geinstalleerd"
+    Write-Host "Winget is already installed"
 }
