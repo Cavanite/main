@@ -5,7 +5,7 @@ $targetdistrubutionlist = 'xxx'
 Connect-ExchangeOnline
 
 #Import-csv
-Import-Csv -path $Pathtocsv
+Import-Csv -path -Delimiter ';' $Pathtocsv
 
 #For each loop to add all the users to distrubution list
 
