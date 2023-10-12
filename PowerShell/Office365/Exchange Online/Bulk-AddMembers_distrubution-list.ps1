@@ -1,4 +1,4 @@
-$GroupEmailID = "RoadandMarine@fincoenergies.com"
+$GroupEmailID = "xxxxxxx"
 $CSVFile = "C:\Temp\Users.txt"
  
 #Connect to Exchange Online
