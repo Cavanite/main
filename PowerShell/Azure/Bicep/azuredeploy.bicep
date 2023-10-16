@@ -19,3 +19,11 @@ resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
     supportsHttpsTrafficOnly: true
   }
 }
+
+resource virtualnetwork 'Microsoft.Network/virtualNetworks@2021-02-01' = {
+  name: '${name}-vnet'
+  location: location
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '
