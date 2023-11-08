@@ -17,6 +17,7 @@ if (Get-Command "winget" -ErrorAction SilentlyContinue) {
         Invoke-WebRequest -Uri "https://aka.ms/getwinget" -OutFile "winget-latest.appxbundle"
         # Install the latest version of winget
         Add-AppxPackage winget-latest.appxbundle
+        Write-Host "Winget has been updated to the latest version."
     }
 } else {
     Write-Output "winget is not installed."
