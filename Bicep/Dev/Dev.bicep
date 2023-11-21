@@ -1,6 +1,9 @@
 param location string = 'westeurope'
 param tag1 string = 'bicepdemo'
 param tag2 string = 'dev'
+param adminusername string = 'bicepadmin'
+@secure()
+param password string
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: 'vnet01'
@@ -48,8 +51,8 @@ resource vm01 'Microsoft.Compute/virtualMachines@2022-11-01' = {
   }
   properties: {
     osProfile: {
-      adminUsername: 'bicepadmin'
-      adminPassword: 'Password1234!'
+      adminUsername: adminusername
+      adminPassword: password
       computerName: 'vm01'
     }
     hardwareProfile: {
@@ -64,7 +67,7 @@ resource vm01 'Microsoft.Compute/virtualMachines@2022-11-01' = {
       }
       osDisk: {
         name: 'vm01-osdisk01'
-        diskSizeGB: 30
+        diskSizeGB: 128
         createOption: 'FromImage'
       }
     }
