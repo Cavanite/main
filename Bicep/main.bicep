@@ -1,5 +1,5 @@
 param location string = 'westeurope'
-param namePrefix string = 'SA-PROD-01'
+param namePrefix string = 'saprod01'
 
 var storageAccountName = '${namePrefix}${uniqueString(resourceGroup().id)}'
 var storageAccountSku = 'Standard_LRS'
