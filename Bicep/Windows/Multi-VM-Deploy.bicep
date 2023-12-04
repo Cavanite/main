@@ -20,7 +20,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2019-11-0
           description: 'description'
           protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '*'
+          destinationPortRange: '3389'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
           access: 'Allow'
