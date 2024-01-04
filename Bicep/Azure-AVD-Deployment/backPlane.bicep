@@ -38,7 +38,7 @@ param loadBalancerType string = 'BreadthFirst'
 param customRdpProperty string 
 
 @description('Friendly Name of the Host Pool, this is visible via the AVD client')
-param hostPoolFriendlyName string =
+param hostPoolFriendlyName string 
 
 @description('Name of the AVD Workspace to used for this deployment')
 param workspaceName string = '${env}-${location}-ws-01'
