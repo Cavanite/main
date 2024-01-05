@@ -63,18 +63,3 @@ Add-Content -Path "C:\scripts\Temp-Cleanout-Log.txt" -Value "Total size of files
 
 Write-Host "Amount of files found after deletion: $files" -ForegroundColor Green
 Write-Host "Total size of files found after deletion: $size MB" -ForegroundColor Green
-
-######################################################
-if (!(Get-ScheduledTask -TaskName "CleanTempTask" -ErrorAction SilentlyContinue)) {
-    Write-Host "Creating scheduled task to run this script every 24 hours" -ForegroundColor Green
-
-    $taskName = "CleanTempTask"
-    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-File 'C:\Github-Main-Cavanite\main\PowerShell\Dev\Temp-Folder-Cleanout\Clean-Temp.ps1'"
-    $trigger = New-ScheduledTaskTrigger -Daily -At "00:00"
-    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings
-}
-else {
-    write-host "Scheduled task already exists" -ForegroundColor Green
-}
-######################################################
