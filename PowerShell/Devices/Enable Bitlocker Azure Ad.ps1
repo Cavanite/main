@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 #Powershell Script Enable Bitlocker Azure AD
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 param([parameter(Mandatory=$True, HelpMessage='Please enter a filename for the CSV file to export')]$CSVFilename)
 
 Write-Host -ForegroundColor Green "Loading all Office 365 Groups"

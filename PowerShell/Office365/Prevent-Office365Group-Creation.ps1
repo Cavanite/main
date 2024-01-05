@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 #Parameter for AD Security Group
 $GroupName = "Group Creators"
  

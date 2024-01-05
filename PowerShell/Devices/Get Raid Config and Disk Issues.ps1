@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 try {
     $volumes = "list volume" | diskpart | Where-Object { $_ -match "^  [^-]" } | Select-Object -skip 1
  

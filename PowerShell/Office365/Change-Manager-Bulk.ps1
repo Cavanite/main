@@ -1,5 +1,15 @@
-#connecting to the Azure AD
-#Connect-AzureAD 
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
+Write-Host "This script will update the manager for the users specified in the CSV file" -ForegroundColor Yellow
+Write-Host "Trying to connect to Azure AD" -ForegroundColor Yellow
+Connect-AzureAD 
+
+Start-Sleep -Seconds 25
 
 #importing the CSV source which has the changes
 $users = Import-Csv '.\data.csv' -Delimiter ';'

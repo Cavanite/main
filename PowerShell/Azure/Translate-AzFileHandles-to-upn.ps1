@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Connect to Azure and sign in to Azure AD
 $tenantId = Read-Host "Please enter the Azure AD Tenant ID"
 Connect-AzAccount -TenantId $tenantId

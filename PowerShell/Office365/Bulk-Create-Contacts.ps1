@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 #Import the CSV file
 $CsvPath = "C:\temp\contacts.csv"
 $contacts = Import-Csv -Path $CsvPath

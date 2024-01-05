@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Variables
 $DiskID = "/subscriptions/<subid>/resourceGroups/<rgname>/providers/Microsoft.Compute/disks/<diskid>"
 $VMName = "   "

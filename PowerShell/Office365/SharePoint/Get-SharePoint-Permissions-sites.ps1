@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 #Function to Get Permissions Applied on a particular Object, such as: Web, List, Folder or List Item
 
 #region ***Parameters***

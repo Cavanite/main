@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Set the registry key to disable the Windows 11 upgrade 
 $regPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\WindowsUpdateBox"
 $regName = "DisableWindows11Upgrade"

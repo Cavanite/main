@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 $users = Get-Mailbox -Resultsize Unlimited
 foreach ($user in $users) {
     Write-Host -ForegroundColor green "adding permission for $($user.alias)..."

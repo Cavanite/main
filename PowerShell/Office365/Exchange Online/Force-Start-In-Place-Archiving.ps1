@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Check if the Exchange Online PowerShell module is installed
 if (-not (Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue)) {
     Write-Host "The Exchange Online PowerShell module is not installed. Installing now..."

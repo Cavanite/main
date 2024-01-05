@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Uninstall 3D Builder:
 
 Get-AppxPackage *3dbuilder* | Remove-AppxPackage

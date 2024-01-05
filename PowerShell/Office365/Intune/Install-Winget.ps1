@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Check if winget is installed
 if (Get-Command "winget" -ErrorAction SilentlyContinue) {
     # Get the version of winget

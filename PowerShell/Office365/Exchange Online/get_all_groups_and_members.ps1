@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 $CSVPath = "C:\Temp\AllGroupMembers.csv"
  
 If(Test-Path $CSVPath) { Remove-Item $CSVPath}

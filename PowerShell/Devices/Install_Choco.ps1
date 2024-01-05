@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 # Check Choco is installed
 if (-Not (Get-Command -Name Choco -ErrorAction SilentlyContinue)) {
     # Script by Cavanite

@@ -1,4 +1,24 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
+Write-Host "Checking if MsolService is installed..." -ForegroundColor Yellow
+If (-not (Get-Module -Name MSOnline)) {
+    Write-Host "Installing MSOnline module..." -ForegroundColor Yellow
+    Install-Module -Name MSOnline -Force
+}
+Else {
+    Write-Host "MSOnline module is installed" -ForegroundColor Green
+}
+
+Write-Host "Connecting to MsolService..." -ForegroundColor Yellow
 Connect-MsolService
+
+Start-Sleep -Seconds 25
+
 Write-Host "Finding Azure Active Directory Accounts..."
 $Users = Get-MsolUser -All | Where-Object { $_.UserType -ne "Guest" }
 $Report = [System.Collections.Generic.List[Object]]::new() # Create output file

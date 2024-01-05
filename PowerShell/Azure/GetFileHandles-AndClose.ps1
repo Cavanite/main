@@ -1,3 +1,10 @@
+#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
 #Open Azure Cloud Shell
 $sharename = "xxxx"
 $subscriptionid = "xxxx-xxxx-xxxx-xxxx"

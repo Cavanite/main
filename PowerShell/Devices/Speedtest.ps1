@@ -1,4 +1,11 @@
-﻿Function Measure-NetworkSpeed{
+﻿#############################################
+#                                           #                       
+#          Script by Bert de Zeeuw          #
+#    visit https://github.com/Cavanite      # 
+#                                           #                       
+#############################################
+
+Function Measure-NetworkSpeed{
     # The test file has to be a 10MB file for the math to work. If you want to change sizes, modify the math to match
     $TestFile  = 'https://ftp.sunet.se/mirror/parrotsec.org/parrot/misc/10MB.bin'
     $TempFile  = Join-Path -Path $env:TEMP -ChildPath 'testfile.tmp'
