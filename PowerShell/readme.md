@@ -8,6 +8,7 @@
   <li><a href="https://ohmyposh.dev/">Oh My Posh</a>: An amazing framework that enhances the command-line interface with beautiful and customizable prompts.</li>
   <li><a href="https://aka.ms/terminal">Windows Terminal</a>: The modern, fast, efficient, and powerful terminal application for Windows.</li>
   <li><a href="https://code.visualstudio.com/">Visual Studio Code</a>: A highly extensible, feature-rich code editor that provides an exceptional development environment.</li>
+  <li><a hreft= "https://github.com/Cavanite/main/blob/main/.vscode/VScode-Extensions.ps1"> Installed Extensions: These are the extensions i use.
 </ul>
 
 <h2>Why Oh My Posh?</h2>
