@@ -8,6 +8,7 @@
 # 	Policy.Read.All
 # 	Reports.Read.All
 # 	SignIns.Read.All
+#   AuditLog.Read.All
 
 
 #This script will get the following information:
@@ -42,7 +43,7 @@ $ClientSecret = ""
 ############################################################################
 Write-Host "Checking if Microsoft.Graph module is installed" -ForegroundColor Yellow
 ############################################################################
-if (-not (Get-Module -Name Microsoft.Graph.Authentication -ListAvailable)) {
+if (-not (Get-Module -Name Microsoft.Graph -ListAvailable)) {
     Write-Host "Microsoft.Graph module is not installed, installing now" -ForegroundColor Yellow
     Install-Module -Name Microsoft.Graph
 }
@@ -54,8 +55,10 @@ Start-Sleep -Seconds 2
 $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
 Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential
+Start-Sleep -Seconds 5
 ############################################################################
 Write-Host "Succesfully connected to Graph" -ForegroundColor Green
+Start-Sleep -Seconds 2
 ############################################################################
 Write-Host "Connecting to Office365 Admin Center" -ForegroundColor Yellow
 Start-Sleep -Seconds 2
@@ -65,102 +68,129 @@ New-Item -Path "C:\scripts" -ItemType Directory -Force
 Write-host "Folder created" -ForegroundColor Green
 ############################################################################
 
-#Get all users and export to CSV with the following properties
+# Get all users and export to CSV with the following properties
+Start-Sleep -Seconds 2
 Write-Host "Getting all active users and exporting to CSV..." -ForegroundColor Yellow
-$Properties = @(
-    'Id','DisplayName', 'UserPrincipalName','UserType', 'AccountEnabled', 'licenseAssignmentStates', 'LicenseDetails', 'AdminRoles'
-)
-############################################################################
-$ActiveUsers = Get-MgUser -Filter "accountEnabled eq true"
 
-foreach ($User in $ActiveUsers) {
-    $User | Select-Object $Properties | Export-Csv -Path "C:\scripts\ActiveUsers.csv" -NoTypeInformation -Append
+$Properties = @(
+    "DisplayName",
+    "UserPrincipalName",
+    "AccountEnabled",
+    "UserType"
+)
+$ActiveUsers = Get-MgUser -Filter "accountEnabled eq true" -Select $Properties
+
+$UserList = foreach ($User in $ActiveUsers) {
+    $UserProperties = [PSCustomObject]@{
+        "DisplayName" = $User.DisplayName
+        "UserPrincipalName" = $User.UserPrincipalName
+        "AccountEnabled" = $User.AccountEnabled.ToString()
+        "UserType" = $User.UserType
+    }
+    $UserProperties
 }
+
+$UserList | Export-Csv -Path "C:\scripts\ActiveUsers.csv" -NoTypeInformation -Append
 Write-Host "All active users exported to CSV" -ForegroundColor Green
+Start-Sleep -Seconds 2
+############################################################################
+
+$adminRoles = @(
+    "Exchange Administrator",
+    "SharePoint Administrator",
+    "Teams Administrator",
+    "User Administrator",
+    "Global Administrator",
+    "Helpdesk Administrator"
+    "Global Reader"
+    "Security Administrator"
+    "Guest Inviter"
+    "Billing Administrator"
+    "Compliance Administrator"
+    "Device Administrator"
+    "Intune Administrator"
+    "Authentication Administrator"
+    "Application Administrator"
+    "Application Developer"
+)
+
+$adminUsers = [System.Collections.Generic.List[PSCustomObject]]::new()
+
+Write-Host "Getting admin users and their roles..." -ForegroundColor Yellow
+foreach ($role in $adminRoles) {
+    $directoryRole = Get-MgDirectoryRole -Filter "DisplayName eq '$role'"
+    if ($directoryRole) {
+        $roleId = $directoryRole.Id
+        $userList = Get-MgDirectoryRoleMember -DirectoryRoleId $roleId
+
+        foreach ($user in $userList) {
+            $upn = (Get-MgUser -UserId $user.id).UserPrincipalName
+            $adminUser = [PSCustomObject]@{
+                "AdminRoles" = $role
+                "UserPrincipalName" = $upn
+            }
+            $adminUsers.Add($adminUser)
+            Write-Host "Admin user found: $upn, Role: $role" -ForegroundColor Yellow
+            Start-Sleep -Seconds 1
+        }
+    }
+}
+Write-Host "Admin users and their roles retrieved." -ForegroundColor Green
+Start-Sleep -Seconds 2
+
+if ($adminUsers.Count -gt 0) {
+    $adminUsers | Export-Csv -Path "C:\scripts\AdminUsers.csv" -NoTypeInformation
+} else {
+    Write-Host "No admin users found."
+}
+Start-Sleep -Seconds 2
 
 ############################################################################
 Write-Host "Getting all blocked users with license and exporting to CSV..." -ForegroundColor Yellow
-$BlockedUsers = Get-MgUser -Filter "accountEnabled eq false -and userType ne 'Guest'"
+New-Item -Path "C:\scripts\BlockedUsers.csv" -ItemType File -Force
+$BlockedUsers = Import-Csv -Path "C:\scripts\BlockedUsers.csv"
 
 foreach ($User in $BlockedUsers) {
-    $User | Select-Object $Properties | Export-Csv -Path "C:\scripts\BlockedUsers.csv" -NoTypeInformation -Append
-    $UserLicenseDetails = Get-MgUserLicenseDetail -UserId $User.Id
-    $UserLicenseDetails | Export-Csv -Path "C:\scripts\UserLicenseDetails.csv" -NoTypeInformation -Append
+    $UserLicenseDetail = Get-MgUserLicenseDetail -UserId $User.UserPrincipalName
+    if ($UserLicenseDetail) {
+        $User | Export-Csv -Path "C:\scripts\BlockedUsers-WithLicenses.csv" -NoTypeInformation -Append
+    }
+if ($BlockedUsers.Count -eq 0) {
+    Write-Host "No blocked users found with licenses." -ForegroundColor Yellow
 }
-Write-Host "Successfully exported blocked users and their license details to CSV, at locations C:\scripts\BlockedUsers.csv and C:\scripts\UserLicenseDetails.csv" -ForegroundColor Green
+}
+Write-Host "Blocked users analyzed and exported to CSV, lets continue." -ForegroundColor Green
+
 ############################################################################
 
-#Getting Guest users
-Write-Host "Getting all guest users and exporting to CSV..." -ForegroundColor Yellow
-$GuestUsers = Get-MgUser -Filter "userType eq 'Guest'"
-foreach ($User in $GuestUsers) {
-    $User | Select-Object $Properties | Export-Csv -Path "C:\scripts\GuestUsers.csv" -NoTypeInformation -Append
-}
-
-Write-Host "Successfully exported guest users to CSV, at location C:\scripts\GuestUsers.csv" -ForegroundColor Green
+Write-Host "Getting all temp accounts and exporting to CSV..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
 ############################################################################
 
 #Getting temp accounts
 Write-Host "Getting all temp accounts and exporting to CSV..." -ForegroundColor Yellow
-$TempAccounts = Get-MgUser -Filter "userType eq 'User' and userType ne 'Guest' and userType ne 'Member' and (UserPrincipalName -like '*temp*' -or UserPrincipalName -like '*tijdelijk*')"
-
-foreach ($User in $TempAccounts) {
-    $User | Select-Object $Properties | Export-Csv -Path "C:\scripts\TempAccounts.csv" -NoTypeInformation -Append
+Start-Sleep -Seconds 2
+$keywords = @("temp", "tijdelijk","test")
+$users = Get-MgUser | Where-Object { 
+    $displayName = $_.DisplayName.ToLower()
+    $keywords | Where-Object { $displayName -like "*$_*" } 
 }
+$usersToExport = $users | Select-Object UserPrincipalName, DisplayName
+$usersToExport | Export-Csv -Path "C:\scripts\TempAccounts.csv" -NoTypeInformation -Append
 Write-Host "Successfully exported temp accounts to CSV, at location C:\scripts\TempAccounts.csv" -ForegroundColor Green
+
 ############################################################################
 
-#Getting unused licenses
-Write-Host "Getting all unused licenses and exporting to CSV..." -ForegroundColor Yellow
+#Getting Guest users
+Write-Host "Getting all guest users and exporting to CSV..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
+$GuestUsers = Get-MgUser -Filter "userType eq 'Guest'"
+$GuestUsersToExport = $GuestUsers | Select-Object DisplayName, UserPrincipalName
+$GuestUsersToExport | Export-Csv -Path "C:\scripts\GuestUsers.csv" -NoTypeInformation -Append
 
-# Get all available licenses in the tenant
-$AvailableLicenses = Get-MgSubscribedSku
+Write-Host "Successfully exported guest users to CSV, at location C:\scripts\GuestUsers.csv" -ForegroundColor Green
+Start-Sleep -Seconds 2
 
-# Initialize a hashtable to store the count of each license
-$LicenseCounts = @{}
-
-foreach ($License in $AvailableLicenses) {
-    # Initialize the count of this license to 0
-    $LicenseCounts[$License.SkuId] = 0
-}
-
-# Initialize an array to store unused licenses
-$UnusedLicenses = @()
-
-foreach ($License in $AvailableLicenses) {
-    # If the count of this license is less than the total available, it's unused
-    if ($LicenseCounts[$License.SkuId] -lt $License.PrepaidUnits.Enabled) {
-        $UnusedLicenses += $License
-    }
-}
-
-# Export unused licenses to CSV
-$UnusedLicenses | Export-Csv -Path "C:\scripts\UnusedLicenses.csv" -NoTypeInformation
-
-Write-Host "Successfully exported unused licenses to CSV, at location C:\scripts\UnusedLicenses.csv" -ForegroundColor Green
-############################################################################
-
-#Getting admin roles
-Write-Host "Getting all admin roles and exporting to CSV..." -ForegroundColor Yellow
-$AdminRoles = Get-MgRoleDefinition
-
-foreach ($Role in $AdminRoles) {
-    $Role | Export-Csv -Path "C:\scripts\AdminRoles.csv" -NoTypeInformation -Append
-
-    # Get users assigned to this admin role
-    $AssignedUsers = Get-MgRoleAssignment -RoleId $Role.Id
-
-    if ($AssignedUsers) {
-        Write-Host "Users assigned to role $($Role.DisplayName):" -ForegroundColor Green
-        foreach ($User in $AssignedUsers) {
-            Write-Host "- $($User.PrincipalDisplayName)"
-        }
-    } else {
-        Write-Host "No users assigned to role $($Role.DisplayName)" -ForegroundColor Yellow
-    }
-}
-
-Write-Host "Successfully exported admin roles to CSV, at location C:\scripts\AdminRoles.csv" -ForegroundColor Green
 ############################################################################
 Write-Host "Office365 Admin Center done" -ForegroundColor Green
 ############################################################################
@@ -169,6 +199,11 @@ Write-Host "Connecting to entra Admin Center" -ForegroundColor Yellow
 Write-Host "Successfully connected to entra Admin Center" -ForegroundColor Green
 ############################################################################
 Write-Host "Getting all signins older then two months and exporting to CSV..." -ForegroundColor Yellow
+#Properties to Retrieve
+$Properties = @(
+    'Id','DisplayName','Mail','UserPrincipalName','UserType', 'AccountEnabled', 'SignInActivity'   
+)
+
 #Get All users along with the properties
 $AllUsers = Get-MgUser -All -Property $Properties #| Select-Object $Properties
 
@@ -178,7 +213,7 @@ $SigninAge = (Get-Date).AddDays(-$amountOfDays)
 ForEach ($User in $AllUsers)
 {
     $LastSignIn = $User.SignInActivity.LastSignInDateTime
-    if ($LastSignIn -lt $SigninAge)
+    if ($LastSignIn -gt $SigninAge)
     {
         $SigninLogs += [PSCustomObject][ordered]@{
             LoginName       = $User.UserPrincipalName
@@ -190,6 +225,8 @@ ForEach ($User in $AllUsers)
         }
     }
 }
+
+$SigninLogs
 
 #Export Data to CSV
 $SigninLogs | Export-Csv -Path "C:\scripts\SigninLogs.csv" -NoTypeInformation
@@ -357,3 +394,5 @@ Write-Host "Successfully connected to Intune Admin Center" -ForegroundColor Gree
 ############################################################################
 Write-Host "Getting all non-compliant devices and exporting to CSV..." -ForegroundColor Yellow
 $NonCompliantDevices = Get-IntuneManagedDevice -Filter "complianceState eq 'noncompliant'"
+
+
