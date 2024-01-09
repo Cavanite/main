@@ -48,7 +48,7 @@ $SigninAge = (Get-Date).AddDays(-$amountOfDays)
 ForEach ($User in $AllUsers)
 {
     $LastSignIn = $User.SignInActivity.LastSignInDateTime
-    if ($LastSignIn -lt $SigninAge)
+    if ($LastSignIn -gt $SigninAge)
     {
         $SigninLogs += [PSCustomObject][ordered]@{
             LoginName       = $User.UserPrincipalName
@@ -61,7 +61,7 @@ ForEach ($User in $AllUsers)
     }
 }
 
-$SigninLogsa
+$SigninLogs
 
 #Export Data to CSV
 $SigninLogs | Export-Csv -Path "C:\Temp\SigninLogs.csv" -NoTypeInformation
