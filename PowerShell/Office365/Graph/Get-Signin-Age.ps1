@@ -61,7 +61,7 @@ ForEach ($User in $AllUsers)
     }
 }
 
-$SigninLogsa
+$SigninLogs
 
 #Export Data to CSV
 $SigninLogs | Export-Csv -Path "C:\Temp\SigninLogs.csv" -NoTypeInformation
