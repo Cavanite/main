@@ -8,6 +8,8 @@
 #User.Read.All
 #AuditLog.Read.All
 
+#This script will check account that havent signed in for x amount of days
+
 $ClientId = ""
 $TenantId = ""
 $ClientSecret = ""
@@ -23,7 +25,7 @@ Start-sleep -Seconds 2
 Write-Host "Microsoft.Graph.Authentication module is installed, let's continue." -ForegroundColor Green
 
 #create a user prompt for the days
-$amountOfDays = Read-Host -Prompt 'Enter the amount of days to check for last login'
+$amountOfDays = Read-Host -Prompt 'Enter the signin age in days'
 
 Write-Host "Connecting to Microsoft Graph API" -ForegroundColor Green 
 Start-Sleep -Seconds 2
@@ -41,12 +43,12 @@ $Properties = @(
 $AllUsers = Get-MgUser -All -Property $Properties #| Select-Object $Properties
 
 $SigninLogs = @()
-$Last60Days = (Get-Date).AddDays(-$amountOfDays)
+$SigninAge = (Get-Date).AddDays(-$amountOfDays)
 
 ForEach ($User in $AllUsers)
 {
     $LastSignIn = $User.SignInActivity.LastSignInDateTime
-    if ($LastSignIn -ge $Last60Days)
+    if ($LastSignIn -lt $SigninAge)
     {
         $SigninLogs += [PSCustomObject][ordered]@{
             LoginName       = $User.UserPrincipalName
