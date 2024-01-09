@@ -8,7 +8,7 @@
 #User.Read.All
 #AuditLog.Read.All
 
-#This script will check account that havent signed in for x amount of days
+#This script will check accounts signed in for x amount of days
 
 $ClientId = ""
 $TenantId = ""
