@@ -61,8 +61,14 @@ ForEach ($User in $AllUsers)
     }
 }
 
-$SigninLogs
-
 #Export Data to CSV
-$SigninLogs | Export-Csv -Path "C:\Temp\SigninLogs.csv" -NoTypeInformation
-Write-Host "Successfully exported to CSV, at location C:\Temp\SigninLogs.csv" -ForegroundColor Green
+if (Test-Path -Path "C:\Temp") {
+    Write-Host "The directory C:\Temp exists, continuing" -ForegroundColor Green
+    $SigninLogs | Export-Csv -Path "C:\Temp\SigninLogs.csv" -NoTypeInformation
+    Write-Host "Successfully exported to CSV, at location C:\Temp\SigninLogs.csv" -ForegroundColor Green
+} else {
+    Write-Host "The directory C:\Temp does not exist, creating now" -ForegroundColor Yellow
+    New-Item -Path "C:\Temp" -ItemType Directory
+    $SigninLogs | Export-Csv -Path "C:\Temp\SigninLogs.csv" -NoTypeInformation
+    Write-Host "Successfully exported to CSV, at location C:\Temp\SigninLogs.csv" -ForegroundColor Green
+}
