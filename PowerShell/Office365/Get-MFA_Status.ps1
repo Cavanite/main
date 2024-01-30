@@ -8,7 +8,7 @@
 Write-Host "Checking if MsolService is installed..." -ForegroundColor Yellow
 If (-not (Get-Module -Name MSOnline)) {
     Write-Host "Installing MSOnline module..." -ForegroundColor Yellow
-    Install-Module -Name MSOnline -Force
+    Install-Module -Name MSOnline -Force -Scope CurrentUser
 }
 Else {
     Write-Host "MSOnline module is installed" -ForegroundColor Green
