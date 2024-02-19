@@ -4,6 +4,16 @@
 #    visit https://github.com/Cavanite      # 
 #                                           #                       
 #############################################
+param (
+    [string]$officeVersionupdateto
+)
+
+if ([string]::IsNullOrEmpty($officeVersionupdateto)) {
+    Write-Host "############################################################################################################" -ForegroundColor Green
+    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -ForegroundColor Red
+    Write-Host "############################################################################################################" -ForegroundColor Green
+    exit 1
+}
 
 Write-Host "############################################################################################################" -ForegroundColor Green
 Write-Host "Checking script directory..." -ForegroundColor Green
@@ -46,7 +56,8 @@ Write-Host "Office version: $officeVersion" -ForegroundColor DarkMagenta
 Write-Host "############################################################################################################" -ForegroundColor Green
 #Checks if the Office version is already up to date
 Start-Sleep 2
-if ($officeVersion -eq "16.0.17231.20236") {
+
+if ($officeVersion -ge $officeVersionupdateto) {
     Write-Host "Office is already up to date" -ForegroundColor Green
     Add-Content -Path $logfile -Value "Office is already up to date"
     Write-Host "Exiting the update process..." -ForegroundColor DarkMagenta
