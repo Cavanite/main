@@ -5,12 +5,13 @@
 #                                           #                       
 #############################################
 param (
-    [string]$Updateto
+    [string]$Updateto,
+    [string]$quiet
 )
 
 if ([string]::IsNullOrEmpty($Updateto)) {
     Write-Host "############################################################################################################" -ForegroundColor Green
-    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -ForegroundColor Red
+    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -quiet true or false -ForegroundColor Red
     Write-Host "############################################################################################################" -ForegroundColor Green
     exit 1
 }
@@ -67,7 +68,7 @@ if ($officeVersion -ge $Updateto) {
     exit 0
 }
 Write-Host "############################################################################################################" -ForegroundColor Green
-cmd.exe "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe" /update user displaylevel=false forceappshutdown=false
+cmd.exe "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe" /update user displaylevel=$quiet forceappshutdown=false
 
 Write-Host "Waiting for the update process to finish..." -ForegroundColor DarkMagenta
 if ($LASTEXITCODE -eq 0) {
