@@ -71,10 +71,13 @@ Write-Host "####################################################################
 cmd.exe "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe" /update user displaylevel=$quiet forceappshutdown=false
 
 Write-Host "Waiting for the update process to finish..." -ForegroundColor DarkMagenta
+Write-Host "############################################################################################################" -ForegroundColor Green
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Office 365 update was successful" -ForegroundColor Green
+    Write-Host "############################################################################################################" -ForegroundColor Green
     Add-Content -Path $logfile -Value "Office 365 update was successful"
 } else {
     Write-Host "Office 365 update failed" -ForegroundColor Red
+    Write-Host "############################################################################################################" -ForegroundColor Green
     Add-Content -Path $logfile -Value "Office 365 update failed"
 }
