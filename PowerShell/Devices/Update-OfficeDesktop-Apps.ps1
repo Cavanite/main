@@ -10,7 +10,7 @@ param (
 
 if ([string]::IsNullOrEmpty($Updateto)) {
     Write-Host "############################################################################################################" -ForegroundColor Green
-    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -quiet true or false -ForegroundColor Red
+    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -ForegroundColor Red
     Write-Host "############################################################################################################" -ForegroundColor Green
     exit 1
 }
@@ -24,7 +24,6 @@ if (!(Test-Path "C:\Scripts")) {
 Write-Host "Script directory exists" -ForegroundColor Green
 Write-Host "############################################################################################################" -ForegroundColor Green
 Write-Host "Creating log file..." -ForegroundColor Green
-Get-Date | Out-File -FilePath "C:\Scripts\Office365Update.log"
 Add-Content -Path "C:\Scripts\Office365Update.log" -Value "Office 365 update process started" 
 $logfile = "C:\Scripts\Office365Update$((Get-Date).ToString('dd-MM-yyyy')).log"
 Write-Host "Log file created: $logfile" -ForegroundColor Green
