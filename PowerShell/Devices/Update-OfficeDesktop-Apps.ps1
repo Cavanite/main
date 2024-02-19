@@ -5,8 +5,7 @@
 #                                           #                       
 #############################################
 param (
-    [string]$Updateto,
-    [string]$quiet
+    [string]$Updateto
 )
 
 if ([string]::IsNullOrEmpty($Updateto)) {
@@ -68,16 +67,20 @@ if ($officeVersion -eq $Updateto) {
     exit 0
 }
 Write-Host "############################################################################################################" -ForegroundColor Green
-cmd.exe "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe" /update user displaylevel=$quiet forceappshutdown=false
-
+Set-Location "C:\Program Files\Common Files\Microsoft Shared\ClickToRun"
+Write-Host "Starting the update process..." -ForegroundColor DarkMagenta
+.\OfficeC2RClient.exe /update user
 Write-Host "Waiting for the update process to finish..." -ForegroundColor DarkMagenta
 Write-Host "############################################################################################################" -ForegroundColor Green
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Office 365 update was successful" -ForegroundColor Green
-    Write-Host "############################################################################################################" -ForegroundColor Green
-    Add-Content -Path $logfile -Value "Office 365 update was successful"
-} else {
-    Write-Host "Office 365 update failed" -ForegroundColor Red
-    Write-Host "############################################################################################################" -ForegroundColor Green
-    Add-Content -Path $logfile -Value "Office 365 update failed"
-}
+Add-Content -Path $logfile -Value "Waiting for the update process to finish..."
+Start-Sleep 600
+Write-Host "############################################################################################################" -ForegroundColor Green
+Write-Host "Checking the Office version..." -ForegroundColor DarkMagenta
+Write-Host "############################################################################################################" -ForegroundColor Green
+Add-Content -Path $logfile -Value "Checking the Office version..."
+Start-Sleep 2
+$officeVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration").VersionToReport
+Write-Host "Office version: $officeVersion" -ForegroundColor DarkMagenta
+Write-Host "############################################################################################################" -ForegroundColor Green
+Add-Content -Path $logfile -Value "Office version: $officeVersion"
+exit
