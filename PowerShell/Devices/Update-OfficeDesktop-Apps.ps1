@@ -5,10 +5,10 @@
 #                                           #                       
 #############################################
 param (
-    [string]$officeVersionupdateto
+    [string]$Updateto
 )
 
-if ([string]::IsNullOrEmpty($officeVersionupdateto)) {
+if ([string]::IsNullOrEmpty($Updateto)) {
     Write-Host "############################################################################################################" -ForegroundColor Green
     Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -ForegroundColor Red
     Write-Host "############################################################################################################" -ForegroundColor Green
@@ -32,7 +32,7 @@ Write-Host "Log file created: $logfile" -ForegroundColor Green
 Write-Host "############################################################################################################" -ForegroundColor Green
 Write-Host "Starting the Office 365 update process..." -ForegroundColor DarkMagenta
 Add-Content -Path $logfile -Value "Starting the Office 365 update process..."
-#Check if the OfficeC2RClient.exe exists
+
 if (Test-Path "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeC2RClient.exe") {
     Write-Host "OfficeC2RClient.exe exists"
     Write-Host "Let's continue with the update process..." -ForegroundColor Green
@@ -54,10 +54,10 @@ Start-Sleep 2
 $officeVersion = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration").VersionToReport
 Write-Host "Office version: $officeVersion" -ForegroundColor DarkMagenta
 Write-Host "############################################################################################################" -ForegroundColor Green
-#Checks if the Office version is already up to date
+Add-Content -Path $logfile -Value "Office version: $officeVersion"
 Start-Sleep 2
 
-if ($officeVersion -ge $officeVersionupdateto) {
+if ($officeVersion -ge $Updateto) {
     Write-Host "Office is already up to date" -ForegroundColor Green
     Add-Content -Path $logfile -Value "Office is already up to date"
     Write-Host "Exiting the update process..." -ForegroundColor DarkMagenta
