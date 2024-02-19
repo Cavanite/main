@@ -58,7 +58,7 @@ Write-Host "####################################################################
 Add-Content -Path $logfile -Value "Office version: $officeVersion"
 Start-Sleep 2
 
-if ($officeVersion -ge $Updateto) {
+if ($officeVersion -eq $Updateto) {
     Write-Host "Office is already up to date" -ForegroundColor Green
     Add-Content -Path $logfile -Value "Office is already up to date"
     Write-Host "Exiting the update process..." -ForegroundColor DarkMagenta
