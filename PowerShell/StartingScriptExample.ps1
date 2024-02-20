@@ -1,16 +1,22 @@
-<#
-.Description
-#############################################
-#                                           #                       
-#          Script by Bert de Zeeuw          #
-#    visit https://github.com/Cavanite      # 
-#                                           #                       
-#############################################
+# Purpose: This script is an example of a starting script that can be used as a template for other scripts.
+#Real world example of the script.
 
-#> 
+
+#Script information
+
+
+#######################################################################################################
+#######################################################################################################
+
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Write-Host "###             Written By Bert de Zeeuw                  ###" -ForegroundColor DarkMagenta
+Write-Host "###        visit https://github.com/Cavanite              ###" -ForegroundColor DarkMagenta
+Write-Host "###                                                       ###" -ForegroundColor DarkMagenta
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+
 #Logging Section
-
-#check the script directory exists.
+#######################################################################################################
+#######################################################################################################
 if (-not (Test-Path -Path "C:\Scripts" -PathType Container)) {
     New-Item -ItemType Directory -Path "C:\Scripts"
 }
@@ -43,7 +49,8 @@ Function Log-Message()
         Write-host -f Red "Error:" $_.Exception.Message 
     }
 }
-
+#######################################################################################################
+#######################################################################################################
 Log-Message "Script Started"
 
 #Your script here
