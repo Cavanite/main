@@ -12,7 +12,7 @@ if (-not (Test-Path -Path "C:\Scripts" -PathType Container)) {
     New-Item -ItemType Directory -Path "C:\Scripts"
 }
 
-Function Write-LogMessage()
+Function Log-Message()
 {
  param
     (

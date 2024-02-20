@@ -27,22 +27,22 @@ Function Write-LogMessage()
     (
     [Parameter(Mandatory=$true)] [string] $Message
     )
- 
+
     Try {
         #Get the current date
         $LogDate = (Get-Date).tostring("dd-MM-yyyy")
- 
+
         #Set the log directory
         $LogDir = "C:\Scripts"
- 
+
         #Frame Log File with Log Directory, Current Directory, and date
         $LogFile = Join-Path -Path $LogDir -ChildPath ($LogDate + ".log")
- 
+
         #Add Content to the Log File
         $TimeStamp = (Get-Date).toString("dd/MM/yyyy HH:mm:ss tt")
         $Line = "$TimeStamp - $Message"
         Add-content -Path $LogFile -Value $Line
- 
+
         Write-host -f Green "$Message"
     }
     Catch {
