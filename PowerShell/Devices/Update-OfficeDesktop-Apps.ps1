@@ -10,7 +10,7 @@ param (
 
 if ([string]::IsNullOrEmpty($Updateto)) {
     Write-Host "############################################################################################################" -ForegroundColor Green
-    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -officeVersionupdateto 16.0.17231.20236" -ForegroundColor Red
+    Write-Host "Please provide the Office version to update to, example: scriptname.ps1 -updateto 16.0.17231.20236" -ForegroundColor Red
     Write-Host "############################################################################################################" -ForegroundColor Green
     exit 1
 }
