@@ -1,9 +1,5 @@
-# Purpose: This script is an example of a starting script that can be used as a template for other scripts.
-#Real world example of the script.
-
-
-#Script information
-
+# Purpose: This script will connect to Exchange Online and retrieve mailbox statistics for all mailboxes in the tenant. 
+# The script will then export the mailbox statistics to a CSV file.
 
 #######################################################################################################
 #######################################################################################################
