@@ -1,10 +1,13 @@
+<#
+.Description
 #############################################
 #                                           #                       
 #          Script by Bert de Zeeuw          #
 #    visit https://github.com/Cavanite      # 
 #                                           #                       
 #############################################
-#Bulk create sharedmailbox from CSV file
+
+#> 
 #Logging Section
 
 #check the script directory exists.
@@ -40,3 +43,11 @@ Function Log-Message()
         Write-host -f Red "Error:" $_.Exception.Message 
     }
 }
+
+Log-Message "Script Started"
+
+#Your script here
+
+
+
+Log-Message "Script Completed"
