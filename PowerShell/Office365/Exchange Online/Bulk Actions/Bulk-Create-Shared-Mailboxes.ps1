@@ -91,7 +91,7 @@ $Recipients = Get-Recipient -ResultSize Unlimited | select Name
 foreach ($Data in $Datas) {
 
     # Check if shared mailbox does not exist
-    If (($Recipients | Where { $_.Name -eq $Data.Name }) -eq $Null) {
+    If ($Null -eq ($Recipients | Where { $_.Name -eq $Data.Name })) {
 
         # Create shared mailbox
         New-Mailbox -Name $Data.Name -DisplayName $Data.DisplayName -Shared
