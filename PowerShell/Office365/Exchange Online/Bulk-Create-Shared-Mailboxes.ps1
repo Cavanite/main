@@ -1,6 +1,6 @@
-
-
-#Bulk create sharedmailbox from CSV file
+#Script information
+# This script is used to create shared mailboxes in Exchange Online and assign permissions to users.
+#############################################################
 #Logging Section
 Write-Host "#############################################################" -ForegroundColor DarkMagenta
 Write-Host "###             Written By Bert de Zeeuw                  ###" -ForegroundColor DarkMagenta
