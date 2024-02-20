@@ -17,8 +17,8 @@ Write-Host "#############################################################" -Fore
 #Logging Section
 #######################################################################################################
 #######################################################################################################
-if (-not (Test-Path -Path "C:\Scripts" -PathType Container)) {
-    New-Item -ItemType Directory -Path "C:\Scripts"
+if (-not (Test-Path -Path "C:\Scripts\Mailboxsizereport" -PathType Container)) {
+    New-Item -ItemType Directory -Path "C:\Scripts\Mailboxsizereport"
 }
 
 Function Log-Message()
@@ -33,7 +33,7 @@ param
         $LogDate = (Get-Date).tostring("dd-MM-yyyy")
 
         #Set the log directory
-        $LogDir = "C:\Scripts"
+        $LogDir = "C:\Scripts\Mailboxsizereport"
 
         #Frame Log File with Log Directory, Current Directory, and date
         $LogFile = Join-Path -Path $LogDir -ChildPath ($LogDate + ".log")
@@ -53,8 +53,40 @@ param
 #######################################################################################################
 Log-Message "Script Started"
 
-#Your script here
+If (Get-Module -ListAvailable -Name ExchangeOnlineManagement) {
+    Log-Message -Message "Exchange Online Management module is already installed."
+    Start-Sleep 1
+    Import-Module ExchangeOnlineManagement
+}
+Else {
+    Install-Module -Name ExchangeOnlineManagement -Force -AllowClobber
+    Log-Message -Message "Exchange Online Management module was not installed, installing now."
+    Start-Sleep 1
+    Import-Module ExchangeOnlineManagement
+    Log-Message -Message "Exchange Online Management module installed."
+}
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Log-Message "Connecting to Exchange Online."
+Connect-ExchangeOnline -ShowProgress $true
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Log-Message "Connected to Exchange Online."
 
+$Mailboxes = Get-Mailbox -Resultsize Unlimited
 
+try {
+    $MailboxStatsList = foreach ($Mailbox in $Mailboxes) {
+        $MailboxStats = Get-MailboxStatistics -Identity $Mailbox.UserPrincipalName
+        $MailboxStats | Select-Object DisplayName, TotalItemSize, ItemCount, LastLogonTime 
+        Log-Message -Message "Mailbox statistics for $($Mailbox.UserPrincipalName) retrieved."
 
+    }
+}
+catch {
+    Log-Message -Message "Error retrieving mailbox statistics for $($Mailbox.UserPrincipalName)." -ForegroundColor Red
+}
+
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Log-Message "Exporting Mailbox Statistics to CSV file."
+$MailboxStatsList | Export-Csv -Path "C:\Scripts\Mailboxsizereport\MailboxStats.csv" -NoTypeInformation
+Log-Message "Mailbox Statistics exported to CSV file."
 Log-Message "Script Completed"
