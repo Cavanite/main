@@ -1,9 +1,15 @@
-#############################################
-#                                           #                       
-#          Script by Bert de Zeeuw          #
-#    visit https://github.com/Cavanite      # 
-#                                           #                       
-#############################################
+#######################################################################################################
+#######################################################################################################
+
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Write-Host "###             Written By Bert de Zeeuw                  ###" -ForegroundColor DarkMagenta
+Write-Host "###        visit https://github.com/Cavanite              ###" -ForegroundColor DarkMagenta
+Write-Host "###                                                       ###" -ForegroundColor DarkMagenta
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+
+#Logging Section
+#######################################################################################################
+#######################################################################################################
 
 Write-Host "Checking if MsolService is installed..." -ForegroundColor Yellow
 If (-not (Get-Module -Name MSOnline)) {
