@@ -60,7 +60,7 @@ Log-Message "Script Started"
 Read-Host "Press Enter to continue"
 $FolderPath = Read-Host "Please enter the path to the file share you want to gather permissions for"
 $Depth = Read-Host "Please enter the maximum depth of folders to search in"
-Log-Message "Path to file share is $Path"
+Log-Message "Path to file share is $FolderPath"
 Start-Sleep -Seconds 2
 
 try {
