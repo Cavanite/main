@@ -19,6 +19,12 @@ Write-Host "#############################################################" -Fore
 #######################################################################################################
 if (-not (Test-Path -Path "C:\Scripts" -PathType Container)) {
     New-Item -ItemType Directory -Path "C:\Scripts"
+    write-host -f Green "Log Directory Created"
+    Start-Sleep -Seconds 2
+}
+else {
+    Write-Host "Script folder already exists" -ForegroundColor DarkMagenta
+    Start-Sleep -Seconds 2
 }
 
 Function Log-Message()
