@@ -47,16 +47,19 @@ $SigninAge = (Get-Date).AddDays(-$amountOfDays)
 
 ForEach ($User in $AllUsers)
 {
-    $LastSignIn = $User.SignInActivity.LastSignInDateTime
-    if ($LastSignIn -lt $SigninAge)
+    if ($User.UserType -eq "Member" -and $User.AccountEnabled -eq $true)
     {
-        $SigninLogs += [PSCustomObject][ordered]@{
-            LoginName       = $User.UserPrincipalName
-            Email           = $User.Mail
-            DisplayName     = $User.DisplayName
-            UserType        = $User.UserType
-            AccountEnabled  = $User.AccountEnabled
-            LastSignIn      = $LastSignIn
+        $LastSignIn = $User.SignInActivity.LastSignInDateTime
+        if ($LastSignIn -lt $SigninAge)
+        {
+            $SigninLogs += [PSCustomObject][ordered]@{
+                LoginName       = $User.UserPrincipalName
+                Email           = $User.Mail
+                DisplayName     = $User.DisplayName
+                UserType        = $User.UserType
+                AccountEnabled  = $User.AccountEnabled
+                LastSignIn      = $LastSignIn
+            }
         }
     }
 }
