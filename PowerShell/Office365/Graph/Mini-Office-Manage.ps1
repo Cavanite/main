@@ -43,6 +43,8 @@ $ClientSecret = ""
 ############################################################################
 Write-Host "Checking if Microsoft.Graph module is installed" -ForegroundColor Yellow
 ############################################################################
+Start-Transcript -Path "C:\scripts\Mini-Office-Manage.log" -Append
+############################################################################
 if (-not (Get-Module -Name Microsoft.Graph -ListAvailable)) {
     Write-Host "Microsoft.Graph module is not installed, installing now" -ForegroundColor Yellow
     Install-Module -Name Microsoft.Graph
@@ -54,7 +56,7 @@ Write-Host "Connecting to Microsoft Graph API" -ForegroundColor Green
 Start-Sleep -Seconds 2
 $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
-Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential
+Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome
 Start-Sleep -Seconds 5
 ############################################################################
 Write-Host "Succesfully connected to Graph" -ForegroundColor Green
@@ -203,7 +205,7 @@ Write-Host "Getting all signins older then two months and exporting to CSV..." -
 $Properties = @(
     'Id','DisplayName','Mail','UserPrincipalName','UserType', 'AccountEnabled', 'SignInActivity'   
 )
-
+$amountOfDays = 60
 #Get All users along with the properties
 $AllUsers = Get-MgUser -All -Property $Properties #| Select-Object $Properties
 
@@ -213,7 +215,7 @@ $SigninAge = (Get-Date).AddDays(-$amountOfDays)
 ForEach ($User in $AllUsers)
 {
     $LastSignIn = $User.SignInActivity.LastSignInDateTime
-    if ($LastSignIn -gt $SigninAge)
+    if ($LastSignIn -lt $SigninAge)
     {
         $SigninLogs += [PSCustomObject][ordered]@{
             LoginName       = $User.UserPrincipalName
@@ -226,44 +228,55 @@ ForEach ($User in $AllUsers)
     }
 }
 
-$SigninLogs
-
-#Export Data to CSV
 $SigninLogs | Export-Csv -Path "C:\scripts\SigninLogs.csv" -NoTypeInformation
 Write-Host "Successfully exported to CSV, at location C:\scripts\SigninLogs.csv" -ForegroundColor Green
 ############################################################################
 
-if (-not (Get-Module -Name Microsoft.Graph.Reports -ListAvailable)) {
-    Write-Host "Microsoft.Graph.Reports module is not installed, installing now" -ForegroundColor Yellow
-    Install-Module -Name Microsoft.Graph.Reports -Scope CurrentUser
-}
-start-sleep -Seconds 2
-Write-Host "Microsoft.Graph.Reports module is installed, let's continue." -ForegroundColor Green
-Write-Host "Getting all risky sign-ins and exporting to CSV..." -ForegroundColor Yellow
+Write-Host "Finding risky users"
+[array]$RiskyUsers = Get-MgRiskyUser -Filter "(riskState ne 'remediated') and (riskState ne 'dismissed')" | Sort-Object RiskLastUpdatedDateTime -Descending
 
-Import-Module Microsoft.Graph.Reports
-$Signins = Get-MgAuditLogSignIn -Top 5000
-$FilteredSignins = $Signins | Where-Object { $_.RiskLevelAggregated -ne "None" }
-$FilteredSignins | Select-Object UserDisplayName, UserPrincipalName, RiskDetail, RiskEventTypes, RiskEventTypesV2, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState
-$FilteredSignins | Export-Csv -Path "C:\scripts\RiskyLoginsLogs.csv" -NoTypeInformation
-Write-Host "Successfully exported to CSV, at location C:\scripts\RiskyLoginsLogs.csv" -ForegroundColor Green
+$Uri = "https://graph.microsoft.com/v1.0/identityProtection/riskyUsers/c2b6c2b9-dddc-acd0-2b39-d519d803dbc3"
+[datetime]$CheckDate = (Get-Date).AddDays(-183)
+
+ForEach ($User in $RiskyUsers) {  
+   If ($User.RiskLastUpdatedDateTime -le $CheckDate) {
+      Write-Host ("Risky User Found!" -f $User.UserDisplayName, $User.UserPrincipalName, $User.RiskLastUpdatedDateTime)
+      $DismissedUserInfo = '{"UserIds": [ "' + $User.Id + '" ]}'
+      Invoke-MgGraphRequest -Uri $Uri -Body $DismissedUserInfo -Method Post
+   }
+}
+
+Write-Host "Successfully exported to CSV, at location C:\scripts\RiskyUsers.csv" -ForegroundColor Green
+
 ############################################################################
 Write-Host "Getting all logins from outside The Netherlands and exporting to CSV..." -ForegroundColor Yellow
-$Signins = Get-MgAuditLogSignIn -Top 5000
-$FilteredSignins = $Signins | Where-Object { $_.Location.CountryOrRegion -ne "Netherlands" }
-$FilteredSignins | Select-Object UserDisplayName, UserPrincipalName, Location, ClientAppUsed, AppDisplayName, DeviceDetail
-$FilteredSignins | Export-Csv -Path "C:\scripts\SigninsOutsideNL.csv" -NoTypeInformation
+
+$SignInLogs = Get-MgAuditLogSignIn -Top 5000
+
+try {
+    foreach ($Signin in $SigninLogs) {
+        if ($Signin.Location.CountryOrRegion -ne "Netherlands") {
+            $Signin | Select-Object -Property AppDisplayName, ConditionalAccessStatus, UserDisplayName, IPAddress , Location, RiskDetail      | Export-Csv -Path "C:\scripts\SigninsOutsideNL.csv" -NoTypeInformation -Append
+        }
+    } 
+}
+catch {
+    Write-Host "No signins from outside The Netherlands found." -ForegroundColor Yellow
+}
+
 Write-Host "Successfully exported to CSV, at location C:\scripts\SigninsOutsideNL.csv" -ForegroundColor Green
 ############################################################################
 #getting named locations
 Write-Host "Getting all named locations and exporting to CSV..." -ForegroundColor Yellow
-$NamedLocations = Get-MgNamedLocation
-$NamedLocations | Export-Csv -Path "C:\scripts\NamedLocations.csv" -NoTypeInformation
+$NamedLocations = Get-MgIdentityConditionalAccessNamedLocation -All
+$NamedLocations | Select-Object -Property  DisplayName, CreatedDateTime, ModifiedDateTime   | Export-Csv -Path "C:\scripts\NamedLocations.csv" -NoTypeInformation
+Start-Sleep -Seconds 2
 Write-Host "Successfully exported to CSV, at location C:\scripts\NamedLocations.csv" -ForegroundColor Green
 ############################################################################
 Write-Host "Getting all conditional access policies and exporting to CSV..." -ForegroundColor Yellow
-$ConditionalAccessPolicies = Get-MgConditionalAccessPolicy
-$ConditionalAccessPolicies | Export-Csv -Path "C:\scripts\ConditionalAccessPolicies.csv" -NoTypeInformation
+Start-Sleep -Seconds 2
+$ConditionalAccessPolicies = Get-MgIdentityConditionalAccessPolicy
+$ConditionalAccessPolicies| Select-Object -Property DisplayName, State | Export-Csv -Path "C:\scripts\ConditionalAccessPolicies.csv" -NoTypeInformation
 Write-Host "Successfully exported to CSV, at location C:\scripts\ConditionalAccessPolicies.csv" -ForegroundColor Green
 ############################################################################
 Write-Host "Entra Admin Center done" -ForegroundColor Green
@@ -279,105 +292,57 @@ Write-Host "Successfully connected to Exchange Admin Center" -ForegroundColor Gr
 ############################################################################
 Write-Host "Getting all mailbox sizes, Archive status and exporting to CSV..." -ForegroundColor Yellow
 
-Function Get_MailboxSize
-{
- $Stats=Get-MailboxStatistics -Identity $UPN
- $ItemCount=$Stats.ItemCount
- $TotalItemSize=$Stats.TotalItemSize
- $TotalItemSizeinBytes= $TotalItemSize –replace “(.*\()|,| [a-z]*\)”, “”
- $TotalSize=$stats.TotalItemSize.value -replace "\(.*",""
- $DeletedItemCount=$Stats.DeletedItemCount
- $TotalDeletedItemSize=$Stats.TotalDeletedItemSize
+try {
+    Connect-ExchangeOnline
+    $mailboxes = Get-EXOMailbox -ResultSize Unlimited 
+    $mailboxSizes = foreach ($mailbox in $mailboxes) {
+        $mailbox | Select-Object -Property DisplayName, UserPrincipalName, RecipientTypeDetails 
+    }
+    $mailboxSizes | Export-Csv -Path "C:\scripts\Mailboxes-Rreport.csv" -NoTypeInformation -Append
+}
+catch {
+    Write-Host "Error getting mailbox sizes." -ForegroundColor Yellow
+}
+Write-Host "Successfully exported to CSV, at location C:\scripts\Mailboxes-Rreport.csvv" -ForegroundColor Green
 
-#Export result to csv
-$Result=@{'Display Name'=$DisplayName;'User Principal Name'=$upn;'Mailbox Type'=$MailboxType;'Primary SMTP Address'=$PrimarySMTPAddress;'Archive Status'=$Archivestatus;'Item Count'=$ItemCount;'Total Size'=$TotalSize;'Total Size (Bytes)'=$TotalItemSizeinBytes;'Deleted Item Count'=$DeletedItemCount;'Deleted Item Size'=$TotalDeletedItemSize;'Issue Warning Quota'=$IssueWarningQuota;'Prohibit Send Quota'=$ProhibitSendQuota;'Prohibit send Receive Quota'=$ProhibitSendReceiveQuota}
-$Results= New-Object PSObject -Property $Result  
-$Results | Select-Object 'Display Name','User Principal Name','Mailbox Type','Primary SMTP Address','Item Count','Total Size','Total Size (Bytes)','Archive Status','Deleted Item Count','Deleted Item Size','Issue Warning Quota','Prohibit Send Quota','Prohibit Send Receive Quota' | Export-Csv -Path $ExportCSV -Notype -Append 
+Write-Host "Gathering archive mailbox information..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
+
+$Result = @()
+$mailboxes = Get-Mailbox -ResultSize Unlimited -RecipientTypeDetails UserMailbox
+$totalmbx = $mailboxes.Count
+
+try {
+    foreach ($mbx in $mailboxes) {
+        if ($mbx.ArchiveStatus -eq "Active") {
+            $mbs = Get-MailboxStatistics $mbx.UserPrincipalName -Archive
+    
+            if ($mbs.TotalItemSize -ne $null) {
+                $size = [math]::Round(($mbs.TotalItemSize.ToString().Split('(')[1].Split(' ')[0].Replace(',', '') / 1MB), 2)
+            } else {
+                $size = 0
+            }
+        }
+    
+        $Result += [PSCustomObject]@{
+            UserName = $mbx.DisplayName
+            UserPrincipalName = $mbx.UserPrincipalName
+            ArchiveStatus = $mbx.ArchiveStatus
+            ArchiveName = $mbx.ArchiveName
+            ArchiveState = $mbx.ArchiveState
+            ArchiveMailboxSizeInMB = $size
+            ArchiveWarningQuota = if ($mbx.ArchiveStatus -eq "Active") { $mbx.ArchiveWarningQuota } else { $null }
+            ArchiveQuota = if ($mbx.ArchiveStatus -eq "Active") { $mbx.ArchiveQuota } else { $null }
+            AutoExpandingArchiveEnabled = $mbx.AutoExpandingArchiveEnabled
+        }
+    }
+}
+catch {
+    Write-Host "No archive mailboxes found." -ForegroundColor Yellow
 }
 
-$ExportCSV="C:\scripts\Mailbox_Report_$((Get-Date -format yyyy-MMM-dd-ddd` hh-mm` tt).ToString()).csv" 
-
-$Result=""   
-$Results=@()  
-$MBCount=0
-$PrintedMBCount=0
-Write-Host Generating mailbox size report...
-
-#Check for input file
-if([string]$MBNamesFile -ne "") 
-{ 
- #We have an input file, read it into memory 
- $Mailboxes=@()
- $Mailboxes=Import-Csv -Header "MBIdentity" $MBNamesFile
- foreach($item in $Mailboxes)
- {
-  $MBDetails=Get-Mailbox -Identity $item.MBIdentity
-  $UPN=$MBDetails.UserPrincipalName  
-  $MailboxType=$MBDetails.RecipientTypeDetails
-  $DisplayName=$MBDetails.DisplayName
-  $PrimarySMTPAddress=$MBDetails.PrimarySMTPAddress
-  $IssueWarningQuota=$MBDetails.IssueWarningQuota -replace "\(.*",""
-  $ProhibitSendQuota=$MBDetails.ProhibitSendQuota -replace "\(.*",""
-  $ProhibitSendReceiveQuota=$MBDetails.ProhibitSendReceiveQuota -replace "\(.*",""
-  #Check for archive enabled mailbox
-  if(($MBDetails.ArchiveDatabase -eq $null) -and ($MBDetails.ArchiveDatabaseGuid -eq $MBDetails.ArchiveGuid))
-  {
-   $ArchiveStatus = "Disabled"
-  }
-  else
-  {
-   $ArchiveStatus= "Active"
-  }
-  $MBCount++
-  Write-Progress -Activity "`n     Processed mailbox count: $MBCount "`n"  Currently Processing: $DisplayName"
-  Get_MailboxSize
-  $PrintedMBCount++
- }
-}
-
-#Get all mailboxes from Office 365
-else
-{
- Get-Mailbox -ResultSize Unlimited | foreach {
-  $UPN=$_.UserPrincipalName
-  $Mailboxtype=$_.RecipientTypeDetails
-  $DisplayName=$_.DisplayName
-  $PrimarySMTPAddress=$_.PrimarySMTPAddress
-  $IssueWarningQuota=$_.IssueWarningQuota -replace "\(.*",""
-  $ProhibitSendQuota=$_.ProhibitSendQuota -replace "\(.*",""
-  $ProhibitSendReceiveQuota=$_.ProhibitSendReceiveQuota -replace "\(.*",""
-  $MBCount++
-  Write-Progress -Activity "`n     Processed mailbox count: $MBCount "`n"  Currently Processing: $DisplayName"
-  if($SharedMBOnly.IsPresent -and ($Mailboxtype -ne "SharedMailbox"))
-  {
-   return
-  }
-  if($UserMBOnly.IsPresent -and ($MailboxType -ne "UserMailbox"))
-  {
-   return
-  }  
-  #Check for archive enabled mailbox
-  if(($_.ArchiveDatabase -eq $null) -and ($_.ArchiveDatabaseGuid -eq $_.ArchiveGuid))
-  {
-   $ArchiveStatus = "Disabled"
-  }
-  else
-  {
-   $ArchiveStatus= "Active"
-  }
-  Get_MailboxSize
-  $PrintedMBCount++
- }
-}
-
-#Open output file after execution 
-If($PrintedMBCount -eq 0)
-{
- Write-Host No mailbox found
-}
-Disconnect-ExchangeOnline
-Write-Host "Disconnected from Exchange Online" -ForegroundColor Green
-Write-Host "Successfully exported to CSV, at location C:\scripts\MailboxSizes.csv" -ForegroundColor Green
+$Result | Export-CSV "C:\scripts\Archive-Mailbox-Report.csv" -NoTypeInformation -Encoding UTF8
+Write-Host "Successfully exported to CSV, at location C:\scripts\Archive-Mailbox-Report.csv" -ForegroundColor Green
 ############################################################################
 Write-Host "Exchange Admin Center done" -ForegroundColor Green
 ############################################################################
@@ -396,3 +361,4 @@ Write-Host "Getting all non-compliant devices and exporting to CSV..." -Foregrou
 $NonCompliantDevices = Get-IntuneManagedDevice -Filter "complianceState eq 'noncompliant'"
 
 
+Stop-Transcript
