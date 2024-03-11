@@ -10,22 +10,22 @@ Write-Host "#############################################################" -Fore
 #######################################################################################################
 #######################################################################################################
 
-Write-Host "Checking if MsolService is installed..." -ForegroundColor Yellow
-If (-not (Get-Module -Name MSOnline)) {
-    Write-Host "Installing MSOnline module..." -ForegroundColor Yellow
-    Install-Module -Name MSOnline -Force -Scope CurrentUser
+Write-Host "Checking if AzureAD is installed..." -ForegroundColor Yellow
+If (-not (Get-Module -Name AzureAD)) {
+    Write-Host "Installing AzureAD module..." -ForegroundColor Yellow
+    Install-Module -Name AzureAD -Force -Scope CurrentUser
 }
 Else {
-    Write-Host "MSOnline module is installed" -ForegroundColor Green
+    Write-Host "AzureAD  module is installed" -ForegroundColor Green
 }
 
-Write-Host "Connecting to MsolService..." -ForegroundColor Yellow
-Connect-MsolService
+Write-Host "Connecting to AzureAD..." -ForegroundColor Yellow
+Connect-Azuread
 
-Start-Sleep -Seconds 25
+Start-Sleep -Seconds 15
 
 Write-Host "Finding Azure Active Directory Accounts..."
-$Users = Get-MsolUser -All | Where-Object { $_.UserType -ne "Guest" }
+$Users = Get-AzureADUser | Where-Object { $_.UserType -ne "Guest" }
 $Report = [System.Collections.Generic.List[Object]]::new() # Create output file
 Write-Host "Processing" $Users.Count "accounts..." 
 ForEach ($User in $Users) {
@@ -54,7 +54,6 @@ ForEach ($User in $Users) {
     Else {
         $MFADefaultMethod = "Not enabled"
     }
-  
     $ReportLine = [PSCustomObject] @{
         UserPrincipalName = $User.UserPrincipalName
         DisplayName       = $User.DisplayName
@@ -64,10 +63,9 @@ ForEach ($User in $Users) {
         PrimarySMTP       = ($PrimarySMTP -join ',')
         Aliases           = ($Aliases -join ',')
     }
-                 
     $Report.Add($ReportLine)
 }
 
 Write-Host "Report is in c:\temp\MFAUsers.csv"
-$Report | Select-Object UserPrincipalName, DisplayName, MFAState, MFADefaultMethod, MFAPhoneNumber, PrimarySMTP, Aliases | Sort-Object UserPrincipalName | Out-GridView
+$Report | Select-Object UserPrincipalName, DisplayName, MFAState, MFADefaultMethod, MFAPhoneNumber, PrimarySMTP, Aliases | Sort-Object UserPrincipalName
 $Report | Sort-Object UserPrincipalName | Export-CSV -Encoding UTF8 -NoTypeInformation c:\temp\MFAUsers.csv

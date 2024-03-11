@@ -164,11 +164,6 @@ if ($BlockedUsers.Count -eq 0) {
 Write-Host "Blocked users analyzed and exported to CSV, lets continue." -ForegroundColor Green
 
 ############################################################################
-
-Write-Host "Getting all temp accounts and exporting to CSV..." -ForegroundColor Yellow
-Start-Sleep -Seconds 2
-############################################################################
-
 #Getting temp accounts
 Write-Host "Getting all temp accounts and exporting to CSV..." -ForegroundColor Yellow
 Start-Sleep -Seconds 2
@@ -292,25 +287,16 @@ Write-Host "Successfully connected to Exchange Admin Center" -ForegroundColor Gr
 ############################################################################
 Write-Host "Getting all mailbox sizes, Archive status and exporting to CSV..." -ForegroundColor Yellow
 
-try {
-    Connect-ExchangeOnline
-    $mailboxes = Get-EXOMailbox -ResultSize Unlimited 
-    $mailboxSizes = foreach ($mailbox in $mailboxes) {
-        $mailbox | Select-Object -Property DisplayName, UserPrincipalName, RecipientTypeDetails 
-    }
-    $mailboxSizes | Export-Csv -Path "C:\scripts\Mailboxes-Rreport.csv" -NoTypeInformation -Append
-}
-catch {
-    Write-Host "Error getting mailbox sizes." -ForegroundColor Yellow
-}
-Write-Host "Successfully exported to CSV, at location C:\scripts\Mailboxes-Rreport.csvv" -ForegroundColor Green
+$MailboxSizes = Get-Mailbox -ResultSize Unlimited | Select-Object DisplayName, UserPrincipalName, RecipientTypeDetails, @{Name='Mailbox Size';Expression={Get-MailboxStatistics $_.UserPrincipalName | Select-Object -ExpandProperty TotalItemSize}}, @{Name='Licenses';Expression={(Get-MsolUser -UserPrincipalName $_.UserPrincipalName | Select-Object -ExpandProperty Licenses).AccountSKUID}}
+$MailboxSizes | Export-Csv -Path "C:\scripts\Mailboxes-Report.csv" -NoTypeInformation
+
+Write-Host "Successfully exported to CSV, at location C:\scripts\Mailboxes-Report.csv" -ForegroundColor Green
 
 Write-Host "Gathering archive mailbox information..." -ForegroundColor Yellow
 Start-Sleep -Seconds 2
 
 $Result = @()
 $mailboxes = Get-Mailbox -ResultSize Unlimited -RecipientTypeDetails UserMailbox
-$totalmbx = $mailboxes.Count
 
 try {
     foreach ($mbx in $mailboxes) {
@@ -357,8 +343,76 @@ Write-Host "Microsoft.Graph.Intune module is installed, let's continue." -Foregr
 ############################################################################
 Write-Host "Successfully connected to Intune Admin Center" -ForegroundColor Green
 ############################################################################
-Write-Host "Getting all non-compliant devices and exporting to CSV..." -ForegroundColor Yellow
-$NonCompliantDevices = Get-IntuneManagedDevice -Filter "complianceState eq 'noncompliant'"
+Write-Host "Gather users without MFA and exporting to CSV..." -ForegroundColor Yellow
+Start-Sleep -Seconds 2
+Write-Host "Checking if AzureAD is installed..." -ForegroundColor Yellow
+If (-not (Get-Module -Name AzureAD)) {
+    Write-Host "Installing AzureAD module..." -ForegroundColor Yellow
+    Install-Module -Name AzureAD -Force -Scope CurrentUser
+}
+Else {
+    Write-Host "AzureAD  module is installed" -ForegroundColor Green
+}
+
+Write-Host "Connecting to AzureAD..." -ForegroundColor Yellow
+Connect-Azuread
+
+Write-Host "Finding Azure Active Directory Accounts..."
+$Users = Get-AzureADUser | Where-Object { $_.UserType -ne "Guest" }
+$Report = [System.Collections.Generic.List[Object]]::new() # Create output file
+Write-Host "Processing" $Users.Count "accounts..." 
+ForEach ($User in $Users) {
+
+    $MFADefaultMethod = ($User.StrongAuthenticationMethods | Where-Object { $_.IsDefault -eq "True" }).MethodType
+    $MFAPhoneNumber = $User.StrongAuthenticationUserDetails.PhoneNumber
+    $PrimarySMTP = $User.ProxyAddresses | Where-Object { $_ -clike "SMTP*" } | ForEach-Object { $_ -replace "SMTP:", "" }
+    $Aliases = $User.ProxyAddresses | Where-Object { $_ -clike "smtp*" } | ForEach-Object { $_ -replace "smtp:", "" }
+
+    If ($User.StrongAuthenticationRequirements) {
+        $MFAState = $User.StrongAuthenticationRequirements.State
+    }
+    Else {
+        $MFAState = 'Disabled'
+    }
+
+    If ($MFADefaultMethod) {
+        Switch ($MFADefaultMethod) {
+            "OneWaySMS" { $MFADefaultMethod = "Text code authentication phone" }
+            "TwoWayVoiceMobile" { $MFADefaultMethod = "Call authentication phone" }
+            "TwoWayVoiceOffice" { $MFADefaultMethod = "Call office phone" }
+            "PhoneAppOTP" { $MFADefaultMethod = "Authenticator app or hardware token" }
+            "PhoneAppNotification" { $MFADefaultMethod = "Microsoft authenticator app" }
+        }
+    }
+    Else {
+        $MFADefaultMethod = "Not enabled"
+    }
+    $ReportLine = [PSCustomObject] @{
+        UserPrincipalName = $User.UserPrincipalName
+        DisplayName       = $User.DisplayName
+        MFAState          = $MFAState
+        MFADefaultMethod  = $MFADefaultMethod
+        MFAPhoneNumber    = $MFAPhoneNumber
+        PrimarySMTP       = ($PrimarySMTP -join ',')
+        Aliases           = ($Aliases -join ',')
+    }
+    $Report.Add($ReportLine)
+}
+
+Write-Host "Report is in c:\temp\MFAUsers.csv"
+$Report | Select-Object UserPrincipalName, DisplayName, MFAState, MFADefaultMethod, MFAPhoneNumber, PrimarySMTP, Aliases | Sort-Object UserPrincipalName
+$Report | Sort-Object UserPrincipalName | Export-CSV -Encoding UTF8 -NoTypeInformation c:\temp\MFAUsers.csv
 
 
-Stop-Transcript
+
+
+
+
+
+
+
+
+
+############################################################################
+
+#$NonCompliantDevices = Get-MgDeviceManagementManagedDevice -Filter "complianceState eq 'nonCompliant'"
