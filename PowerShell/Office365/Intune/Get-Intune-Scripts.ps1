@@ -47,4 +47,5 @@ Function Get-DeviceManagementScripts(){
 Connect-MSGraph | Out-Null
 
 Get-DeviceManagementScripts -FolderPath C:\temp
-#Get-DeviceManagementScripts -FolderPath C:\temp -FileName myScript.ps1
+Write-Host "All scripts are exported to C:\temp."
+Start-Sleep -Seconds 5
