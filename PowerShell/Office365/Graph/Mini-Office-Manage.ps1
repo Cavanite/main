@@ -1,9 +1,15 @@
-#############################################
-#                                           #                       
-#          Script by Bert de Zeeuw          #
-#    visit https://github.com/Cavanite      # 
-#                                           #                       
-#############################################
+#######################################################################################################
+#######################################################################################################
+
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+Write-Host "###             Written By Bert de Zeeuw                  ###" -ForegroundColor DarkMagenta
+Write-Host "###        visit https://github.com/Cavanite              ###" -ForegroundColor DarkMagenta
+Write-Host "###                                                       ###" -ForegroundColor DarkMagenta
+Write-Host "#############################################################" -ForegroundColor DarkMagenta
+
+#Logging Section
+#######################################################################################################
+#######################################################################################################
 #Make sure your app registration has the following permissions:
 # 	Policy.Read.All
 # 	Reports.Read.All
@@ -35,7 +41,7 @@
 # - Device encryption status
 # - App installation errors
 
-
+Start-Transcript -Path "C:\scripts\Mini-Office-Manage.log" -Append
 ############################################################################
 $ClientId = ""
 $TenantId = ""
@@ -404,15 +410,10 @@ $Report | Select-Object UserPrincipalName, DisplayName, MFAState, MFADefaultMeth
 $Report | Sort-Object UserPrincipalName | Export-CSV -Encoding UTF8 -NoTypeInformation c:\temp\MFAUsers.csv
 
 
-
-
-
-
-
-
-
-
-
 ############################################################################
 
 #$NonCompliantDevices = Get-MgDeviceManagementManagedDevice -Filter "complianceState eq 'nonCompliant'"
+
+
+Stop-Transcript
+Write-Host "Script finished, check the logs for more information" -ForegroundColor Green
