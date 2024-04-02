@@ -73,13 +73,19 @@ try {
     else {
         Write-Host "Existing Retention Policy found" -ForegroundColor Green
         Start-Sleep -Seconds 2
+        $RetentionPolicyTags = Get-RetentionPolicyTag | Select-Object -ExpandProperty Name | Where-Object {$_ -eq "Applied automatically to default folder (Calendar)"}
         try {
-            Write-Host "Creating New tag and add to existing policy" -ForegroundColor Yellow
-            New-RetentionPolicyTag -Name "Applied automatically to default folder (Calendar)" -Type Calendar -RetentionAction DeleteAndAllowRecovery -RetentionEnabled $false
-            Start-Sleep -Seconds 2
-            Write-Host "Don't archive Calendar has been created succesfully" -ForegroundColor Green
-            Write-Host "Adding new tag to existing policy" -ForegroundColor Yellow
-            Set-RetentionPolicy -Identity $RetentionPolicyName -RetentionPolicyTagLinks "Custom 6 months move to archive", "Applied automatically to default folder (Calendar)", "1 Month Delete", "1 Week Delete", "1 Year Delete", "5 Year Delete", "Junk Email", "Never Delete", "Recoverable items 14 days move to archive"
+            if (-not $RetentionPolicyTags) {
+                Write-Host "Creating New tag and add to existing policy" -ForegroundColor Yellow
+                New-RetentionPolicyTag -Name "Applied automatically to default folder (Calendar)" -Type Calendar -RetentionAction DeleteAndAllowRecovery -RetentionEnabled $false
+                Start-Sleep -Seconds 2
+                Write-Host "Don't archive Calendar has been created succesfully" -ForegroundColor Green
+                Write-Host "Adding new tag to existing policy" -ForegroundColor Yellow
+                Set-RetentionPolicy -Identity $RetentionPolicyName -RetentionPolicyTagLinks "Custom 6 months move to archive", "Applied automatically to default folder (Calendar)", "1 Month Delete", "1 Week Delete", "1 Year Delete", "5 Year Delete", "Junk Email", "Never Delete", "Recoverable items 14 days move to archive"    
+            }
+            else {
+                Write-Host "Don't archive Calendar tag already exists" -ForegroundColor Green
+            }
         }
         catch {
             Write-Host "Failed to create Don't archive Calendar" -ForegroundColor Red
