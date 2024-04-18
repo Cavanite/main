@@ -32,29 +32,34 @@ else {
 
 Start-Transcript -Path "C:\Scripts\Get-Signinlogs-Outside-NL.log" -Append
 #######################################################################################################
-#Installing Module and Setting up Connection to AzureAD
-Write-Host "Script is starting" -ForegroundColor DarkMagenta
-Start-Sleep -Seconds 2
-Write-Host "Checking if AzureADPreview Module is installed" -ForegroundColor DarkMagenta
-If (-not (Get-Module -Name AzureADPreview -ListAvailable)) {
-    Install-Module -Name AzureADPreview -Force
-    Import-Module AzureADPreview
+Write-Host "Checking if Graph module is installed" -ForegroundColor Green
+if(-not (Get-Module -Name "Microsoft.Graph.Beta.Reports")) {
+    Write-Host "Microsoft.Graph.Beta.Reports module is not installed, installing now" -ForegroundColor Green
+    Install-Module -Name "Microsoft.Graph.Beta.Reports" -Force -AllowClobber -Scope CurrentUser
 }
-Write-Host "AzureADPreview Module is installed" -ForegroundColor DarkMagenta
-
-Write-Host "Connecting to AzureAD" -ForegroundColor DarkMagenta
-Connect-AzureAD
-Start-Sleep -Seconds 2
-Write-Host "Connected to AzureAD" -ForegroundColor DarkMagenta
+else {
+    Write-Host "Microsoft.Graph.Beta.Reports module is already installed" -ForegroundColor Green
+}
+#######################################################################################################
+# Connect to Microsoft Graph
+Connect-MgGraph -Scopes "User.Read.All", "Group.Read.All", "UserAuthenticationMethod.Read.All", "AuditLog.Read.All" -NoWelcome
 #######################################################################################################
 #Gathering the SigninLogs
 Write-Host "Gathering SigninLogs" -ForegroundColor DarkMagenta
+$SignInLogs = Get-MgAuditLogSignIn -Top 5000
+
 try {
-    #Get-AzureADAuditSignInLogs
+    foreach ($Signin in $SigninLogs) {
+        if ($Signin.Location.CountryOrRegion -ne "Netherlands") {
+            $Signin | Select-Object -Property AppDisplayName, ConditionalAccessStatus, UserDisplayName, IPAddress , Location, RiskDetail      | Export-Csv -Path "C:\scripts\SigninsOutsideNL.csv" -NoTypeInformation -Append
+        }
+    } 
 }
 catch {
-    <#Do this if a terminating exception happens#>
+    Write-Host "No signins from outside The Netherlands found." -ForegroundColor Yellow
 }
+
+Write-Host "Successfully exported to CSV, at location C:\scripts\SigninsOutsideNL.csv" -ForegroundColor Green
 
 
 
