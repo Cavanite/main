@@ -28,7 +28,6 @@ else {
     Write-Host "Script folder already exists" -ForegroundColor DarkMagenta
     Start-Sleep -Seconds 3
 }
-
 #######################################################################################################
 #######################################################################################################
 Start-Transcript -Path "C:\Scripts\DUO-Updater.log" -Append
@@ -37,18 +36,24 @@ Start-Transcript -Path "C:\Scripts\DUO-Updater.log" -Append
 $downloadURL = "https://dl.duosecurity.com/duo-win-login-latest.exe"
 $downloadPath = "C:\Scripts\duo-win-login-latest.exe"
 $RequiredVersion = "4.3.1"
-
 #######################################################################################################
-
+if (-not (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "Duo Authentication for Windows Logon*" })) {
+    Write-Host "Duo software is not installed on this device."
+    Stop-Transcript
+    Start-Sleep -Seconds 3
+    exit 0
+}
+#######################################################################################################
 #Gather the installed Duo Version
-$InstalledVersion = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "Duo Authentication for Windows Logon x64" }).DisplayVersion
-
+$InstalledVersion = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "Duo Authentication for Windows Logon*" }).DisplayVersion
+Write-Host "Installed Duo Version: $InstalledVersion"
 try {
     if ($InstalledVersion -lt $RequiredVersion) {
         Write-Host "Updating Duo software..."
         Invoke-WebRequest -Uri $downloadURL -OutFile $downloadPath 
         Start-Process -FilePath $downloadPath -ArgumentList "/S" -Wait
         Write-Host "Duo software updated successfully."
+        Remove-Item -Path $downloadPath
         Start-Sleep -Seconds 3
         Stop-Transcript
         exit 0
