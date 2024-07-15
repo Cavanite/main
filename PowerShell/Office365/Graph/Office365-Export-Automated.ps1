@@ -338,7 +338,7 @@ else {
         }
     }
     if ($Check) {
-        $IncludeUsers += if ($Policy.Conditions.Users.IncludeGroups) { $Policy.Conditions.Users.IncludeGroups | ForEach-Object { if ($Members = Get-MgBetaGroupMember -GroupId $_) { $Members.Id } if ($Owner = Get-MgBetaGroupOwner -GroupId $_) { $Owner.Id } } }
+        $IncludeUsers += if ($Policy.Conditions.Users.IncludeGroups) { $Policy.Conditions.Users.IncludeGroups | ForEach-Object {ect { Members = rs =MgBetaGroupMember -GroupId $_ $Members.Id } if ($Owner = Get-MgBetaGroupOwner -GroupId $_) { $Owner.Id } } }
         $IncludeUsers += Get-UserIdsByRole -Roles $Policy.Conditions.Users.IncludeRoles -DirectoryRole $DirectoryRole
         $IncludeUsers += Process-ExternalUsers -ExternalTenantUser $IncludedExternalUser -UsersinTenant $UsersinTenant -B2BGuest $B2BGuest.Id -B2BMember $B2BMember.Id -LocalGuest $LocalGuest.Id -B2BDirectConnect $B2BDirectConnect
     }
@@ -594,3 +594,69 @@ else
     } 
 } 
 #######################################################################################################
+Write-Host "Admin report script executed successfully" -ForegroundColor Green
+#######################################################################################################
+
+Write-Host "Now we are gathering the last sign-in information for the users older then 60 days."
+
+#Properties to Retrieve
+$Properties = @(
+    'Id','DisplayName','Mail','UserPrincipalName','UserType', 'AccountEnabled', 'SignInActivity'   
+)
+$amountOfDays = 60
+#Get All users along with the properties
+$AllUsers = Get-MgBetaUser -All -Property $Properties #| Select-Object $Properties
+
+$SigninLogs = @()
+$SigninAge = (Get-Date).AddDays(-$amountOfDays)
+
+ForEach ($User in $AllUsers)
+{
+    $LastSignIn = $User.SignInActivity.LastSignInDateTime
+    if ($LastSignIn -lt $SigninAge)
+    {
+        $SigninLogs += [PSCustomObject][ordered]@{
+            LoginName       = $User.UserPrincipalName
+            Email           = $User.Mail
+            DisplayName     = $User.DisplayName
+            UserType        = $User.UserType
+            AccountEnabled  = $User.AccountEnabled
+            LastSignIn      = $LastSignIn
+        }
+    }
+}
+
+Write-Host "Exporting the last sign-in information to CSV file" -ForegroundColor Green
+try {
+    Write-Host "Exporting the last sign-in information to CSV file" -ForegroundColor Green
+    $SigninLogs | Export-Excel -Path $FilePath -Append -WorksheetName "LastSignInReport"
+    Write-Host "Last Sign-in report script executed successfully" -ForegroundColor Green
+}
+catch {
+    Write-Host "Error occurred while exporting the last sign-in information to CSV file" -ForegroundColor Red
+    write-host "Error: $_" -ForegroundColor Red
+}
+#######################################################################################################
+Write-Host "Exporting users with license." -ForegroundColor Green
+
+$Users = Get-MgBetaUser -All
+
+try {
+    $UserList = @()
+    foreach ($User in $Users) {
+        $UserList += [PSCustomObject]@{
+            "UserPrincipalName" = $User.UserPrincipalName
+            "DisplayName"       = $User.DisplayName
+            "License"           = $User.AssignedLicenses[0].SkuId
+        }
+    }
+    $UserList | Export-Excel -Path $FilePath -WorksheetName "UsersWithLicense"
+    Write-Host "Exported all users to $FilePath" -ForegroundColor Green
+    Start-Sleep -Seconds 3
+}
+catch {
+    Write-Host "Failed to export users" -ForegroundColor Red
+}
+
+#######################################################################################################
+
