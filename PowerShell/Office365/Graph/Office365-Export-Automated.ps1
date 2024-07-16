@@ -784,7 +784,6 @@ Get-MgBetaUser -All -Property $RequiredProperties | Select-Object $RequiredPrope
 # Open output file after execution
 Write-Host "Script executed successfully"
 ########################################################################################################
-
 Write-Host "Now we are gathering the mailbox size information for the users."
 Write-Host "First connecting to Exchange Online..."
 # Connect to Exchange Online
@@ -898,8 +897,5 @@ else
         $PrintedMBCount++
     }
 }
-
-
 Write-Host "Mailbox Folder Statistics Report generated successfully!" -ForegroundColor Green
-
 #######################################################################################################
