@@ -639,24 +639,267 @@ catch {
 #######################################################################################################
 Write-Host "Exporting users with license." -ForegroundColor Green
 
-$Users = Get-MgBetaUser -All
-
-try {
-    $UserList = @()
-    foreach ($User in $Users) {
-        $UserList += [PSCustomObject]@{
-            "UserPrincipalName" = $User.UserPrincipalName
-            "DisplayName"       = $User.DisplayName
-            "License"           = $User.AssignedLicenses[0].SkuId
-        }
-    }
-    $UserList | Export-Excel -Path $FilePath -WorksheetName "UsersWithLicense"
-    Write-Host "Exported all users to $FilePath" -ForegroundColor Green
-    Start-Sleep -Seconds 3
-}
-catch {
-    Write-Host "Failed to export users" -ForegroundColor Red
-}
-
 #######################################################################################################
 
+# Function to convert friendly name
+Function Convert-FrndlyName {
+    param(
+        [Parameter(Mandatory=$true)]
+        [Array]$InputIds
+    )
+    $EasyName = $FriendlyNameHash[$SkuName]
+    if (!($EasyName)) {
+        $NamePrint = $SkuName
+    }
+    else {
+        $NamePrint = $EasyName
+    }
+    return $NamePrint
+}
+
+# Initialize variables
+$ExportResult = ""
+$ExportResults = @()
+$PrintedUser = 0
+
+# Get license in the organization and save it as a hash table
+$SKUHashtable = @{ }
+Get-MgBetaSubscribedSku -All | ForEach-Object {
+    $SKUHashtable[$_.skuid] = $_.Skupartnumber
+}
+# Get friendly name of Subscription plan from external file
+$FriendlyNameHash = Get-Content -Raw -Path C:\scripts\LicenseFriendlyName.txt -ErrorAction Stop | ConvertFrom-StringData
+# Get friendly name of Service plan from external file
+$ServicePlanHash = @{ }
+Import-Csv -Path C:\scripts\ServicePlansFrndlyName.csv | ForEach-Object {
+    $ServicePlanHash[$_.ServicePlanId] = $_.ServicePlanFriendlyNames
+}
+$GroupNameHash = @{ }
+# Process users
+$RequiredProperties = @('UserPrincipalName','DisplayName','EmployeeId','CreatedDateTime','AccountEnabled','Department','JobTitle','LicenseAssignmentStates','AssignedLicenses','SigninActivity')
+Get-MgBetaUser -All -Property $RequiredProperties | Select-Object $RequiredProperties | ForEach-Object {
+    $Count++
+    $Print = 1
+    $DirectlyAssignedLicense = @()
+    $GroupBasedLicense = @()
+    $DirectlyAssignedLicense_FrndlyName = @()
+    $GroupBasedLicense_FrndlyName = @()
+    $UPN = $_.UserPrincipalName
+
+    Write-Progress -Activity "`n     Processing user: $Count - $UPN"
+
+    $DisplayName = $_.DisplayName
+    $AccountEnabled = $_.AccountEnabled
+    $Department = $_.Department
+    $JobTitle = $_.JobTitle
+    $LastSignIn = $_.SignInActivity.LastSignInDateTime
+
+    if ($LastSignIn -eq $null) {
+        $LastSignIn = "Never Logged In"
+        $InactiveDays = "-"
+    }
+    else {
+        $InactiveDays = (New-TimeSpan -Start $LastSignIn).Days
+    }
+
+    $LicenseAssignmentStates = $_.LicenseAssignmentStates
+
+    if ($AccountEnabled -eq $true) {
+        $AccountStatus = 'Enabled'
+    }
+    else {
+        $AccountStatus = 'Disabled'
+    }
+    foreach ($License in $licenseAssignmentStates) { 
+        $SkuName = $SkuHashtable[$License.SkuId]
+        $FriendlyName = Convert-FrndlyName -InputIds $SkuName
+        $DisabledPlans = $License.DisabledPlans
+        $ServicePlanNames = @()
+        if ($DisabledPlans.count -ne 0) {
+            foreach ($DisabledPlan in $DisabledPlans) {
+                $ServicePlanName = $ServicePlanHash[$DisabledPlan]
+                if (!($ServicePlanName)) {
+                    $NamePrint = $DisabledPlan
+                }
+                else {
+                    $NamePrint = $ServicePlanName
+                }
+                $ServicePlanNames += $NamePrint
+            }
+        }
+        $DisabledPlans = $ServicePlanNames -join ","
+        $State = $License.State
+        $Error = $License.Error
+        # Filter for users with license assignment errors
+        if ($FindUsersWithLicenseAssignmentErrors.IsPresent -and ($State -eq "Active")) {
+            $Print = 0
+        }
+        if ($License.AssignedByGroup -eq $null) {
+            $LicenseAssignmentPath = "Directly assigned"
+            $GroupName = "NA"
+            # Filter for group based license assignment
+            if ($ShowGrpBasedLicenses.IsPresent) {
+                $Print = 0
+            }
+        }
+        else {
+            $LicenseAssignmentPath = "Inherited from group"
+
+            # Filter for directly assigned licenses
+            if ($ShowDirectlyAssignedLicenses.IsPresent) {
+                $Print = 0
+            }
+            $AssignedByGroup = $License.AssignedByGroup
+            # Check if Id-Name pair already exists in hash table
+            if ($GroupNameHash.ContainsKey($AssignedByGroup)) {
+                $GroupName = $GroupNameHash[$AssignedByGroup]
+            }
+            else {
+                $GroupName = (Get-MgBetagroup -GroupId $AssignedByGroup).DisplayName
+                $GroupNameHash[$AssignedByGroup] = $GroupName
+            }
+        }
+        if ($Print -eq 1) {
+            $ExportResult = [PSCustomObject]@{
+                'Display Name' = $DisplayName
+                'UPN' = $UPN
+                'License Assignment Path' = $LicenseAssignmentPath
+                'Sku Name' = $SkuName
+                'Sku_FriendlyName' = $FriendlyName
+                'Disabled Plans' = $DisabledPlans
+                'Assigned via(group name)' = $GroupName
+                'State' = $State
+                'Error' = $Error
+                'Last Signin Time' = $LastSignIn
+                'Inactive Days' = $InactiveDays
+                'Account Status' = $AccountStatus
+                'Department' = $Department
+                'Job Title' = $JobTitle
+            }
+
+            $ExportResult | Export-Excel -Path $FilePath -Append -WorksheetName "License-Report"
+        }
+    }
+}
+# Open output file after execution
+Write-Host "Script executed successfully"
+########################################################################################################
+
+Write-Host "Now we are gathering the mailbox size information for the users."
+Write-Host "First connecting to Exchange Online..."
+# Connect to Exchange Online
+#First check if the module is installed
+if (-not(Get-Module -Name ExchangeOnlineManagement -ListAvailable)) {
+    Install-Module -Name ExchangeOnlineManagement -Force -AllowClobber
+}
+else {
+    Write-Host "Exchange Online Management module is already installed" -ForegroundColor Yellow
+    Connect-ExchangeOnline
+}
+
+Function Get_MailboxSize
+{
+    $Stats = Get-MailboxStatistics -Identity $UPN
+    $ItemCount = $Stats.ItemCount
+    $TotalItemSize = $Stats.TotalItemSize
+    $TotalItemSizeinBytes = $TotalItemSize -replace "(.*\()|,| [a-z]*\)", ""
+    $TotalSize = $stats.TotalItemSize.value -replace "\(.*",""
+    $DeletedItemCount = $Stats.DeletedItemCount
+    $TotalDeletedItemSize = $Stats.TotalDeletedItemSize
+
+    # Export result to csv
+    $Result = @{
+        'Display Name' = $DisplayName;
+        'User Principal Name' = $upn;
+        'Mailbox Type' = $MailboxType;
+        'Primary SMTP Address' = $PrimarySMTPAddress;
+        'Archive Status' = $Archivestatus;
+        'Item Count' = $ItemCount;
+        'Total Size' = $TotalSize;
+        'Total Size (Bytes)' = $TotalItemSizeinBytes;
+        'Deleted Item Count' = $DeletedItemCount;
+        'Deleted Item Size' = $TotalDeletedItemSize;
+        'Issue Warning Quota' = $IssueWarningQuota;
+        'Prohibit Send Quota' = $ProhibitSendQuota;
+        'Prohibit Send Receive Quota' = $ProhibitSendReceiveQuota
+    }
+    $Results = New-Object PSObject -Property $Result  
+    $Results | Select-Object 'Display Name','User Principal Name','Mailbox Type','Primary SMTP Address','Item Count','Total Size','Total Size (Bytes)','Archive Status','Deleted Item Count','Deleted Item Size','Issue Warning Quota','Prohibit Send Quota','Prohibit Send Receive Quota' | Export-Excel -Path $FilePath -Append -WorksheetName "Mailbox Size Report"
+}
+
+$Result = ""   
+$Results = @()  
+$MBCount = 0
+$PrintedMBCount = 0
+Write-Host "Generating mailbox size report..."
+
+# Check for input file
+if ([string]$MBNamesFile -ne "") 
+{ 
+    # We have an input file, read it into memory 
+    $Mailboxes = @()
+    $Mailboxes = Import-Csv -Header "MBIdentity" $MBNamesFile
+    foreach ($item in $Mailboxes)
+    {
+        $MBDetails = Get-Mailbox -Identity $item.MBIdentity
+        $UPN = $MBDetails.UserPrincipalName  
+        $MailboxType = $MBDetails.RecipientTypeDetails
+        $DisplayName = $MBDetails.DisplayName
+        $PrimarySMTPAddress = $MBDetails.PrimarySMTPAddress
+        $IssueWarningQuota = $MBDetails.IssueWarningQuota -replace "\(.*",""
+        $ProhibitSendQuota = $MBDetails.ProhibitSendQuota -replace "\(.*",""
+        $ProhibitSendReceiveQuota = $MBDetails.ProhibitSendReceiveQuota -replace "\(.*",""
+        # Check for archive enabled mailbox
+        if (($MBDetails.ArchiveDatabase -eq $null) -and ($MBDetails.ArchiveDatabaseGuid -eq $MBDetails.ArchiveGuid))
+        {
+            $ArchiveStatus = "Disabled"
+        }
+        else
+        {
+            $ArchiveStatus = "Active"
+        }
+        $MBCount++
+        Write-Progress -Activity "`n     Processed mailbox count: $MBCount "`n"  Currently Processing: $DisplayName"
+        Get_MailboxSize
+        $PrintedMBCount++
+    }
+}
+# Get all mailboxes from Office 365
+else
+{
+    Get-Mailbox -ResultSize Unlimited | ForEach-Object {
+        $UPN = $_.UserPrincipalName
+        $Mailboxtype = $_.RecipientTypeDetails
+        $DisplayName = $_.DisplayName
+        $PrimarySMTPAddress = $_.PrimarySMTPAddress
+        $IssueWarningQuota = $_.IssueWarningQuota -replace "\(.*",""
+        $ProhibitSendQuota = $_.ProhibitSendQuota -replace "\(.*",""
+        $ProhibitSendReceiveQuota = $_.ProhibitSendReceiveQuota -replace "\(.*",""
+        $MBCount++
+        Write-Progress -Activity "`n     Processed mailbox count: $MBCount "`n"  Currently Processing: $DisplayName"
+        if ($SharedMBOnly.IsPresent -and ($Mailboxtype -ne "SharedMailbox"))
+        {
+            return
+        }
+        if ($UserMBOnly.IsPresent -and ($MailboxType -ne "UserMailbox"))
+        {
+            return
+        }  
+        # Check for archive enabled mailbox
+        if (($_.ArchiveDatabase -eq $null) -and ($_.ArchiveDatabaseGuid -eq $_.ArchiveGuid))
+        {
+            $ArchiveStatus = "Disabled"
+        }
+        else
+        {
+            $ArchiveStatus = "Active"
+        }
+        Get_MailboxSize
+        $PrintedMBCount++
+    }
+}
+
+
+Write-Host "Mailbox Folder Statistics Report generated successfully!" -ForegroundColor Green
+
+#######################################################################################################
