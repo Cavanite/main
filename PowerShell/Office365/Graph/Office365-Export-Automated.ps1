@@ -407,23 +407,6 @@ foreach ($User in $MgBetaUsers) {
     }
 #######################################################################################################
     #Open output file after execution
-    if ((Test-Path -Path $FilePath) -eq "True") {
-        Write-Host "Exported report has $ProcessedUserCount user(s)" -ForegroundColor cyan
-        $Prompt = New-Object -ComObject wscript.shell
-        $UserInput = $Prompt.popup("Do you want to open output file?", 0, "Open Output File", 4)
-        if ($UserInput -eq 6) {
-            Invoke-Item "$FilePath"
-        }
-        Write-Host "Detailed report available in: " -NoNewline -ForegroundColor Yellow
-        Write-Host $FilePath 
-    }
-        else {
-$Registered = $Registered | Select-Object -Unique 
-if (!$CurrentPolicy) {
-    $NotRegistered = $NotRegistered.GUID | Where-Object { $_ -notin $IncludeUsers.GUID }
-} 
-$IncludedUsers = $IncludeId | Select-Object -Unique
-}
 $ProcessedUserCount = 0
 Write-Host "Processing the Users"
 $FilePath = "C:\scripts\O365-Export-$((Get-Date -format 'dd-MM-yyyy').ToString()).xlsx"
