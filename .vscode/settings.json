@@ -6,4 +6,5 @@
     "editor.fontWeight": "bold",
     "editor.stickyScroll.enabled": true,
     "editor.cursorWidth": 3,
+    "azureTerraform.checkTerraformCmd": false,
 }
