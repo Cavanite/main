@@ -17,20 +17,6 @@
 <p>Microsoft Graph has revolutionized how I interact with Microsoft 365 services by providing a single endpoint to access data across the entire Microsoft ecosystem. With its comprehensive REST API and powerful PowerShell SDK, Microsoft Graph makes automation and integration projects more efficient and scalable.</p>
 <p>The primary focus areas include <a href="https://docs.microsoft.com/en-us/graph/api/resources/conditionalaccesspolicy?view=graph-rest-1.0">Conditional Access</a>, <a href="https://docs.microsoft.com/en-us/graph/api/resources/intune-graph-overview?view=graph-rest-1.0">Intune Management</a>, and <a href="https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0">Azure AD User Management</a>.</p>
 
-<h2>Getting Started with Microsoft Graph PowerShell</h2>
-
-<p>To start using Microsoft Graph PowerShell SDK, follow these steps:</p>
-
-<ol>
-  <li>Install the Microsoft Graph PowerShell module from the <a href="https://www.powershellgallery.com/packages/Microsoft.Graph">PowerShell Gallery</a>.</li>
-  <li>Open Windows Terminal or PowerShell and run the installation command:</li>
-</ol>
-
-
-</code></pre>
-
-<p>Now you can start exploring and automating your Microsoft 365 environment using Graph API!</p>
-
 <h2>Visual Studio Code Setup for Graph Development</h2>
 
 <p>To optimize Visual Studio Code for Microsoft Graph development, perform the following steps:</p>
@@ -41,5 +27,17 @@
   <li>Open Visual Studio Code and press <kbd>Ctrl+Shift+P</kbd> (or <kbd>Cmd+Shift+P</kbd> on macOS) to open the command palette.</li>
   <li>Configure your workspace settings for optimal PowerShell and Graph development experience.</li>
 </ol>
+
+<p>Perfect! Your Visual Studio Code is now optimized for Microsoft Graph API development and automation.</p>
+
+<h2>Repository Contents</h2>
+
+<p>This repository contains a collection of Microsoft Graph API projects focusing on:</p>
+<ul>
+  <li><strong>Conditional Access Automation</strong>: Scripts for managing and documenting conditional access policies</li>
+  <li><strong>Intune Device Management</strong>: Automated device enrollment, compliance, and configuration</li>
+  <li><strong>Azure AD User Management</strong>: User provisioning, group management, and reporting scripts</li>
+  <li><strong>Microsoft 365 Security</strong>: Security posture assessment and improvement automation</li>
+</ul>
 
 <p>Happy Graph API Development!!</p>
