@@ -26,17 +26,7 @@
   <li>Open Windows Terminal or PowerShell and run the installation command:</li>
 </ol>
 
-<pre><code>Install-Module Microsoft.Graph -Scope CurrentUser
-Import-Module Microsoft.Graph.Authentication
-Import-Module Microsoft.Graph.Identity.SignIns
-Import-Module Microsoft.Graph.DeviceManagement
-</code></pre>
 
-<ol start="3">
-  <li>Connect to your Microsoft 365 tenant:</li>
-</ol>
-
-<pre><code>Connect-MgGraph -Scopes "Policy.Read.All", "DeviceManagementConfiguration.Read.All", "User.Read.All"
 </code></pre>
 
 <p>Now you can start exploring and automating your Microsoft 365 environment using Graph API!</p>
@@ -51,17 +41,5 @@ Import-Module Microsoft.Graph.DeviceManagement
   <li>Open Visual Studio Code and press <kbd>Ctrl+Shift+P</kbd> (or <kbd>Cmd+Shift+P</kbd> on macOS) to open the command palette.</li>
   <li>Configure your workspace settings for optimal PowerShell and Graph development experience.</li>
 </ol>
-
-<p>Perfect! Your Visual Studio Code is now optimized for Microsoft Graph API development and automation.</p>
-
-<h2>Repository Contents</h2>
-
-<p>This repository contains a collection of Microsoft Graph API projects focusing on:</p>
-<ul>
-  <li><strong>Conditional Access Automation</strong>: Scripts for managing and documenting conditional access policies</li>
-  <li><strong>Intune Device Management</strong>: Automated device enrollment, compliance, and configuration</li>
-  <li><strong>Azure AD User Management</strong>: User provisioning, group management, and reporting scripts</li>
-  <li><strong>Microsoft 365 Security</strong>: Security posture assessment and improvement automation</li>
-</ul>
 
 <p>Happy Graph API Development!!</p>
