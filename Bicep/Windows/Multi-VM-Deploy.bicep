@@ -62,7 +62,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-03-01' = {
 }
 
 resource networkInterfaces 'Microsoft.Network/networkInterfaces@2024-03-01' = [for i in range(0, amountofvms): {
-  name: '${vmnames[i]}-nic-prod-${location}-01'
+  name: '${vmnames[i]}-nic-dev-${location}-01'
     tags: {
     env: tag1
     owner: tag2
