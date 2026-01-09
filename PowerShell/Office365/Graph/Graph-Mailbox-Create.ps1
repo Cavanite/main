@@ -15,51 +15,63 @@ Write-Host "###                                                       ###" -Fore
 Write-Host "#############################################################" -ForegroundColor DarkMagenta
 
 
-#######################################################################################################
-if (-not (Test-Path -Path "C:\Scripts" -PathType Container)) {
-    New-Item -ItemType Directory -Path "C:\Scripts"
-    write-host -f Green "Log Directory Created"
-    Start-Sleep -Seconds 2
+############################################################################
+function Initialize-Scriptlogging {
+    $Logpath = "C:\scripts\"
+    if (-not (Test-Path -Path $Logpath -PathType Container)) {
+        New-Item -ItemType Directory -Path $Logpath
+        write-host -f Green "Log Directory Created"
+        Start-Sleep -Seconds 2
+    }
+    else {
+        Write-Host "Script folder already exists" -ForegroundColor DarkMagenta
+        Start-Sleep -Seconds 2
+    }
 }
-else {
-    Write-Host "Script folder already exists" -ForegroundColor DarkMagenta
-    Start-Sleep -Seconds 2
-}
-
-$scriptname = $MyInvocation.MyCommand.Name
+Initialize-Scriptlogging 
+############################################################################
 
 ############################################################################
 $ClientId = ""
 $TenantId = ""
 $ClientSecret = ""
 ############################################################################
-Write-Host "Checking if Microsoft.Graph module is installed" -ForegroundColor Yellow
-############################################################################
-if (-not (Get-Module -Name Microsoft.Graph -ListAvailable)) {
+function function Initialize-GraphModules {
+
+    Write-Host "Checking if Microsoft.Graph module is installed" -ForegroundColor Yellow
+    if (-not (Get-Module -Name Microsoft.Graph -ListAvailable)) {
     Write-Host "Microsoft.Graph module is not installed, installing now" -ForegroundColor Yellow
     Install-Module -Name Microsoft.Graph
 }
-Start-sleep -Seconds 2
-Write-Host "Microsoft.Graph module is installed, let's continue." -ForegroundColor Green
+    Start-sleep -Seconds 2
+    Write-Host "Microsoft.Graph module is installed, let's continue." -ForegroundColor Green
+
+
+}
+Initialize-GraphModules
 ############################################################################
 Start-Transcript -Path "C:\Scripts\$scriptname.log" -Append
 Write-Host "Starting Script" -ForegroundColor Green
 ############################################################################
-try {
-    Write-Host "Trying to Microsoft Graph API" -ForegroundColor Green 
-    Start-Sleep -Seconds 2
-    $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
-    $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
-    Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome
+function Initialize-Graphconnection {
 
-    Start-Sleep -Seconds 5
-    Write-Host "Connected to Microsoft Graph API" -ForegroundColor Green
-}
-catch {
-    Write-Host "Failed to connect to Microsoft Graph API, exiting script." -ForegroundColor Red
+    Write-Host "Connecting to Microsoft Graph API..." -ForegroundColor Green
     Start-Sleep -Seconds 2
-    Exit
+
+    try {
+        $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
+        $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
+
+        Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential       
+        Write-Host "Successfully connected to Microsoft Graph API." -ForegroundColor Green 
+        Start-Sleep -Seconds 2
+    }
+    catch {
+        Write-Host "Error connecting to Microsoft Graph API: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
 }
+Initialize-Graphconnection
 ############################################################################
 function Get-RandomPassword {
     param (
