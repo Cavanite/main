@@ -16,7 +16,6 @@ $ClientSecret = ""
 
 Write-Host "Checking if Microsoft.Graph.Authentication module is installed" -ForegroundColor Yellow
 
-
 if (-not (Get-Module -Name Microsoft.Graph.Authentication -ListAvailable)) {
     Write-Host "Microsoft.Graph.Authentication module is not installed, installing now" -ForegroundColor Yellow
     Install-Module -Name Microsoft.Graph.Authentication -Scope CurrentUser
@@ -27,13 +26,27 @@ Write-Host "Microsoft.Graph.Authentication module is installed, let's continue."
 #create a user prompt for the days
 $amountOfDays = Read-Host -Prompt 'Enter the signin age in days'
 
-Write-Host "Connecting to Microsoft Graph API" -ForegroundColor Green 
-Start-Sleep -Seconds 2
-$ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
-$ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
-Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential
+function Initialize-Graphconnection {
 
-Write-Host "Succesfully connected to Graph, retrieving users" -ForegroundColor Green
+    Write-Host "Connecting to Microsoft Graph API..." -ForegroundColor Green
+    Start-Sleep -Seconds 2
+
+    try {
+        $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
+        $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
+
+        Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential       
+        Write-Host "Successfully connected to Microsoft Graph API." -ForegroundColor Green 
+        Start-Sleep -Seconds 2
+    }
+    catch {
+        Write-Host "Error connecting to Microsoft Graph API: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+}
+# Initialize the connection to Microsoft Graph
+Initialize-Graphconnection
+
 #Properties to Retrieve
 $Properties = @(
     'Id','DisplayName','Mail','UserPrincipalName','UserType', 'AccountEnabled', 'SignInActivity'   
