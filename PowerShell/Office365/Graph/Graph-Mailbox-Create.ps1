@@ -36,7 +36,7 @@ $ClientId = ""
 $TenantId = ""
 $ClientSecret = ""
 ############################################################################
-function function Initialize-GraphModules {
+function Initialize-GraphModules {
 
     Write-Host "Checking if Microsoft.Graph module is installed" -ForegroundColor Yellow
     if (-not (Get-Module -Name Microsoft.Graph -ListAvailable)) {
