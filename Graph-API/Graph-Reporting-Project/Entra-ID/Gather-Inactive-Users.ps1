@@ -10,6 +10,19 @@ Write-Host "#############################################################" -Fore
 #######################################################################################################
 #######################################################################################################
 
+function Initialize-Scriptlogging {
+    $Logpath = "C:\scripts\"
+    if (-not (Test-Path -Path $Logpath -PathType Container)) {
+        New-Item -ItemType Directory -Path $Logpath
+        write-host -f Green "Log Directory Created"
+        Start-Sleep -Seconds 2
+    }
+    else {
+        Write-Host "Script folder already exists" -ForegroundColor DarkMagenta
+        Start-Sleep -Seconds 2
+    }
+}
+
 function Get-GraphModules {
     $graphModules = Get-Module -Name Microsoft.Graph.* -ListAvailable
     if ($graphModules) {
@@ -53,21 +66,18 @@ function Get-GraphModules {
     }
 }
 
-function Connect-Graph {
-    param (
-        [string]$ClientId,
-        [string]$TenantId,
-        [string]$ClientSecret
-    )
+function Initialize-Graphconnection {
+
     Write-Host "Connecting to Microsoft Graph API..." -ForegroundColor Green
     Start-Sleep -Seconds 2
 
-    $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
-    $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
-    
     try {
-        Connect-MgGraph -ClientId $ClientId -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome
+        $ClientSecretPass = ConvertTo-SecureString -String $ClientSecret -AsPlainText -Force
+        $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientId, $ClientSecretPass
+
+        Connect-MgGraph -TenantId $tenantId -ClientSecretCredential $ClientSecretCredential       
         Write-Host "Successfully connected to Microsoft Graph API." -ForegroundColor Green 
+        Start-Sleep -Seconds 2
     }
     catch {
         Write-Host "Error connecting to Microsoft Graph API: $($_.Exception.Message)" -ForegroundColor Red
@@ -143,8 +153,12 @@ function Export-InactiveUsers {
         exit 1
     }
 }
-
+########################################################################
+########################################################################
 # Main script execution
+# Making sure the logging is enabled.
+Initialize-Scriptlogging
+########################################################################
 
 Get-GraphModules
 
@@ -153,8 +167,12 @@ $ClientId = "your-client-id"
 $TenantId = "your-tenant-id"
 $ClientSecret = "your-client-secret"
 
-Connect-Graph -ClientId $ClientId -TenantId $TenantId -ClientSecret $ClientSecret
+
+########################################################################
+Initialize-Graphconnection
+########################################################################
 Export-InactiveUsers -DaysThreshold 60
+########################################################################
 Write-Host "Script execution completed." -ForegroundColor Green
 # Disconnect from Microsoft Graph
 Disconnect-MgGraph -Confirm:$false
