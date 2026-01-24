@@ -45,7 +45,7 @@ Start-Transcript -Path $logFile -Append
 Write-Host "Starting kiosk computer reset process..." -ForegroundColor Green
 
 #region Helper Functions
-function Read-YN([string]$Prompt) {
+function read-host([string]$Prompt) {
     while ($true) {
         $answer = Read-Host -Prompt $Prompt
         switch ($answer.ToUpper()) {
@@ -61,7 +61,7 @@ function Read-YN([string]$Prompt) {
 # 1. Delete User Profiles and Local Users
 ##############################################################################################
 
-$DeleteUserProfiles = Read-YN "Would you like to remove all user profiles of this device (except admin/whitelisted)? (Y/N)"
+$DeleteUserProfiles = read-host "Would you like to remove all user profiles of this device (except admin/whitelisted)? (Y/N)"
 Write-Host "User selected option (delete profiles): $DeleteUserProfiles, let's proceed." -ForegroundColor Yellow
 
 if ($DeleteUserProfiles) {
@@ -127,8 +127,7 @@ else {
 ##############################################################################################
 # 2. Application Cleanup Section
 ##############################################################################################
-
-$RemoveApps = Read-YN "Would you like to remove all installed applications (except a whitelist)? (Y/N)"
+$RemoveApps = Read-Host "Would you like to remove all installed applications (except a whitelist)? (Y/N)"
 Write-Host "User selected option (remove apps): $RemoveApps, let's proceed." -ForegroundColor Yellow
 
 if ($RemoveApps) {
@@ -211,7 +210,7 @@ else {
 # 3. Basic System Cleanup (Temp, Recycle Bin)
 ##############################################################################################
 
-$DoCleanup = Read-YN "Would you like to clean Windows temp folders and Recycle Bin? (Y/N)"
+$DoCleanup = read-host "Would you like to clean Windows temp folders and Recycle Bin? (Y/N)"
 
 if ($DoCleanup) {
     Write-Host "Cleaning temporary files and Recycle Bin..." -ForegroundColor Cyan
@@ -254,11 +253,11 @@ else {
 # 4. User Creation Section
 ##############################################################################################
 
-$newLocalUser = Read-YN "Would you like to create a new local user on this device? (Y/N)"
+$newLocalUser = read-host "Would you like to create a new local user on this device? (Y/N)"
 Write-Host "User selected option (create new local user): $newLocalUser, let's proceed." -ForegroundColor Yellow
 
 if ($newLocalUser) {
-    $confirmation = Read-YN "Are you sure you want to create a new local user? (Y/N)"
+    $confirmation = read-host "Are you sure you want to create a new local user? (Y/N)"
     if (-not $confirmation) {
         Write-Host "User creation cancelled." -ForegroundColor Red
         $newLocalUser = $false
@@ -303,7 +302,7 @@ else {
 
 Write-Host "Kiosk reset script completed. Please review the log at: $logFile" -ForegroundColor Green
 
-$doReboot = Read-YN "Do you want to restart the device now? (Y/N)"
+$doReboot = read-host "Do you want to restart the device now? (Y/N)"
 if ($doReboot) {
     Write-Host "Rebooting in 10 seconds..." -ForegroundColor Yellow
     Start-Sleep -Seconds 10
