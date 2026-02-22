@@ -1,0 +1,208 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.card {
+  padding: 1.5em;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+}
+
+.Dashboard {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.Weather-card {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  max-width: 400px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.Azure-status-card {
+  position: fixed;
+  top: 80px;
+  left: 460px;
+  max-width: 500px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.Weather-card h2,
+.Azure-status-card h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.Weather-card h3 {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.Weather-card p {
+  margin: 0.5rem 0;
+}
+
+.status-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.status-item h3 a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+.status-item h3 a:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.status-date {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0.25rem 0;
+}
+
+.status-item p {
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.News-section {
+  position: fixed;
+  top: 80px;
+  left: 460px;
+  right: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.News-section h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.news-item {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.news-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(100, 108, 255, 0.5);
+}
+
+.news-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.news-item h3 a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+.news-item h3 a:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.news-date {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.news-description {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.4;
+}
