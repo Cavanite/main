@@ -41,6 +41,10 @@ function App() {
     const [newsLoading, setNewsLoading] = useState<boolean>(true)
     const [newsError, setNewsError] = useState<string | null>(null)
 
+    const [macStatus, setMacStatus] = useState<RSSItem[]>([])
+    const [macStatusLoading, setMacStatusLoading] = useState<boolean>(true)
+    const [macStatusError, setMacStatusError] = useState<string | null>(null)
+
     useEffect(() => {
         const fetchWeather = async () => {
             try {
@@ -114,6 +118,66 @@ function App() {
         return () => clearInterval(newsInterval)
     }, [])
 
+    useEffect(() => {
+        const fetchMacStatus = async () => {
+            try {
+                const feedUrl = 'https://status.cloud.microsoft/api/feed/mac'
+                const response = await fetch(
+                    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=10`
+                )
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Microsoft status feed')
+                }
+
+                const data: RSS2JSONResponse = await response.json()
+
+                if (data.status !== 'ok') {
+                    throw new Error('RSS feed error')
+                }
+
+                const items: RSSItem[] = data.items.map((item) => ({
+                    title: item.title,
+                    link: item.link,
+                    pubDate: item.pubDate,
+                    description: item.description,
+                    guid: item.guid || item.link
+                }))
+
+                setMacStatus(items.slice(0, 4))
+                setMacStatusLoading(false)
+            } catch (err) {
+                console.error('Microsoft status feed error:', err)
+                setMacStatusError(err instanceof Error ? err.message : 'Failed to load Microsoft status feed')
+                setMacStatusLoading(false)
+            }
+        }
+
+        fetchMacStatus()
+
+        const macStatusInterval = setInterval(fetchMacStatus, 3600000)
+
+        return () => clearInterval(macStatusInterval)
+    }, [])
+
+    const isOperationalNotice = (item: RSSItem) => {
+        const title = item.title.toLowerCase()
+        const description = item.description
+            .split(/<[^>]*>/g)
+            .join('')
+            .toLowerCase()
+
+        return (
+            title.includes('microsoft admin center') &&
+            description.includes(
+                'site is updated when service issues are preventing tenant administrators from accessing service health'
+            )
+        )
+    }
+
+    const showOperationalStatus = macStatus.some(isOperationalNotice)
+    const macStatusIncidents = macStatus.filter((item) => !isOperationalNotice(item))
+
     return (
         <>
             <h1 className='Dashboard'>Dashboard</h1>
@@ -133,13 +197,19 @@ function App() {
                 )}
             </div>
 
-            <div className='News-section'>
-                <h2>Latest Tech News - BleepingComputer</h2>
-                {newsLoading && <p>Loading news...</p>}
-                {newsError && <p>Error: {newsError}</p>}
-                {!newsLoading && !newsError && news.length > 0 && (
+            <div className='Microsoft-status-card News-section'>
+                <h2>Microsoft Cloud Status - Mac</h2>
+                {macStatusLoading && <p>Loading status updates...</p>}
+                {macStatusError && <p>Error: {macStatusError}</p>}
+                {!macStatusLoading && !macStatusError && showOperationalStatus && (
+                    <div className='operational-status'>
+                        <span className='operational-icon'>V</span>
+                        <span>Everything is operational</span>
+                    </div>
+                )}
+                {!macStatusLoading && !macStatusError && macStatusIncidents.length > 0 && (
                     <div className='news-grid'>
-                        {news.map((item, index) => (
+                        {macStatusIncidents.map((item, index) => (
                             <div key={item.guid || index} className='news-item'>
                                 <h3>
                                     <a href={item.link} target="_blank" rel="noopener noreferrer">
@@ -155,12 +225,45 @@ function App() {
                                     })}
                                 </p>
                                 <p className='news-description' dangerouslySetInnerHTML={{
-                                    __html: item.description.replace(/<[^>]*>/g, '').substring(0, 120) + '...'
+                                    __html: item.description.split(/<[^>]*>/g).join('').substring(0, 120) + '...'
                                 }} />
                             </div>
                         ))}
                     </div>
                 )}
+            </div>
+
+            <div className='Feeds-panel'>
+                <div className='News-section'>
+                    <h2>Latest Tech News - BleepingComputer</h2>
+                    {newsLoading && <p>Loading news...</p>}
+                    {newsError && <p>Error: {newsError}</p>}
+                    {!newsLoading && !newsError && news.length > 0 && (
+                        <div className='news-grid'>
+                            {news.map((item, index) => (
+                                <div key={item.guid || index} className='news-item'>
+                                    <h3>
+                                        <a href={item.link} target="_blank" rel="noopener noreferrer">
+                                            {item.title}
+                                        </a>
+                                    </h3>
+                                    <p className='news-date'>
+                                        {new Date(item.pubDate).toLocaleString('nl-NL', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </p>
+                                    <p className='news-description' dangerouslySetInnerHTML={{
+                                        __html: item.description.split(/<[^>]*>/g).join('').substring(0, 120) + '...'
+                                    }} />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
             </div>
         </>
     )

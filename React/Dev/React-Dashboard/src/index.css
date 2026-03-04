@@ -76,6 +76,14 @@ h1 {
   border: 5px solid rgba(255, 255, 255, 0.468);
 }
 
+.Microsoft-status-card {
+  position: fixed;
+  top: 420px;
+  left: 20px;
+  width: 400px;
+  min-height: 180px;
+}
+
 .Azure-status-card {
   position: fixed;
   top: 80px;
@@ -140,13 +148,22 @@ h1 {
   margin: 0.5rem 0;
 }
 
-.News-section {
+.Feeds-panel {
   position: fixed;
   top: 80px;
   left: 460px;
   right: 20px;
-  max-height: calc(100vh - 100px);
+  bottom: 20px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.News-section {
+  position: relative;
+  max-height: none;
+  overflow: visible;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
@@ -205,4 +222,21 @@ h1 {
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
   line-height: 1.4;
+}
+
+.operational-status {
+  display: inline-flex;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  background: rgba(22, 101, 52, 0.55);
+  color: #f0fdf4;
+  font-weight: 600;
+}
+
+.operational-icon {
+  color: #22c55e;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
