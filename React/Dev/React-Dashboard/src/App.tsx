@@ -32,6 +32,15 @@ interface RSS2JSONResponse {
     }[]
 }
 
+interface CatApiItem {
+    url: string
+}
+
+interface PokemonApiItem {
+    id: number
+    name: string
+}
+
 function App() {
     const [weather, setWeather] = useState<WeatherData | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
@@ -41,9 +50,128 @@ function App() {
     const [newsLoading, setNewsLoading] = useState<boolean>(true)
     const [newsError, setNewsError] = useState<string | null>(null)
 
-    const [macStatus, setMacStatus] = useState<RSSItem[]>([])
-    const [macStatusLoading, setMacStatusLoading] = useState<boolean>(true)
-    const [macStatusError, setMacStatusError] = useState<string | null>(null)
+    const [catImageUrl, setCatImageUrl] = useState<string | null>(null)
+    const [catLoading, setCatLoading] = useState<boolean>(true)
+    const [catError, setCatError] = useState<string | null>(null)
+    const [catCountdown, setCatCountdown] = useState<number>(60)
+    const [isPokemonRevealed, setIsPokemonRevealed] = useState<boolean>(false)
+    const [selectedPokemonGuess, setSelectedPokemonGuess] = useState<string | null>(null)
+    const [pokemonStatus, setPokemonStatus] = useState<string>('Pick one answer')
+    const [pokemonCountdown, setPokemonCountdown] = useState<number>(15)
+    const [correctPokemon, setCorrectPokemon] = useState<string>('')
+    const [pokemonImageUrl, setPokemonImageUrl] = useState<string>('')
+    const [pokemonOptions, setPokemonOptions] = useState<string[]>([])
+    const [pokemonLoading, setPokemonLoading] = useState<boolean>(true)
+    const [pokemonError, setPokemonError] = useState<string | null>(null)
+
+    const pokemonRoundSeconds = 15
+    const maxPokemonId = 898
+
+    const formatPokemonName = (name: string): string => {
+        const spacedName = name.split('-').join(' ')
+        return spacedName.charAt(0).toUpperCase() + spacedName.slice(1)
+    }
+
+    const getPokemonOptionClassName = (option: string): string => {
+        if (!isPokemonRevealed) {
+            return 'pokemon-option-btn'
+        }
+
+        if (option === correctPokemon) {
+            return 'pokemon-option-btn correct'
+        }
+
+        if (selectedPokemonGuess === option) {
+            return 'pokemon-option-btn wrong'
+        }
+
+        return 'pokemon-option-btn'
+    }
+
+    const shuffleOptions = (options: string[]): string[] => {
+        const shuffled = [...options]
+        for (let i = shuffled.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1))
+            const temp = shuffled[i]
+            shuffled[i] = shuffled[j]
+            shuffled[j] = temp
+        }
+
+        return shuffled
+    }
+
+    const getRandomPokemonId = (usedIds: Set<number>): number => {
+        let id = Math.floor(Math.random() * maxPokemonId) + 1
+        while (usedIds.has(id)) {
+            id = Math.floor(Math.random() * maxPokemonId) + 1
+        }
+        usedIds.add(id)
+        return id
+    }
+
+    const fetchPokemonById = async (id: number): Promise<PokemonApiItem> => {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+        if (!response.ok) {
+            throw new Error('Failed to fetch pokemon data')
+        }
+
+        const data: PokemonApiItem = await response.json()
+        return data
+    }
+
+    const startNewPokemonRound = async () => {
+        try {
+            setPokemonLoading(true)
+            setPokemonError(null)
+            setIsPokemonRevealed(false)
+            setSelectedPokemonGuess(null)
+            setPokemonStatus('Pick one answer')
+            setPokemonCountdown(pokemonRoundSeconds)
+
+            const usedIds = new Set<number>()
+            const correctId = getRandomPokemonId(usedIds)
+            const correctData = await fetchPokemonById(correctId)
+            const correctDisplayName = formatPokemonName(correctData.name)
+
+            const wrongOptions: string[] = []
+            while (wrongOptions.length < 3) {
+                const wrongId = getRandomPokemonId(usedIds)
+                const wrongData = await fetchPokemonById(wrongId)
+                const wrongDisplayName = formatPokemonName(wrongData.name)
+
+                if (wrongDisplayName !== correctDisplayName && !wrongOptions.includes(wrongDisplayName)) {
+                    wrongOptions.push(wrongDisplayName)
+                }
+            }
+
+            const options = shuffleOptions([correctDisplayName, ...wrongOptions])
+
+            setCorrectPokemon(correctDisplayName)
+            setPokemonOptions(options)
+            setPokemonImageUrl(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${correctData.id}.png?t=${Date.now()}`)
+            setPokemonLoading(false)
+        } catch (err) {
+            setPokemonError(err instanceof Error ? err.message : 'Failed to load pokemon round')
+            setPokemonLoading(false)
+        }
+    }
+
+    const handlePokemonGuess = (guess: string) => {
+        if (isPokemonRevealed || pokemonLoading || !correctPokemon) {
+            return
+        }
+
+        setSelectedPokemonGuess(guess)
+        setIsPokemonRevealed(true)
+        if (guess === correctPokemon) {
+            setPokemonStatus(`Correct! It is ${correctPokemon}.`)
+            return
+        }
+
+        setPokemonStatus(`Nope. It was ${correctPokemon}.`)
+    }
+
+
 
     useEffect(() => {
         const fetchWeather = async () => {
@@ -67,8 +195,8 @@ function App() {
 
         fetchWeather()
 
-        // Set up hourly refresh (3600000 ms = 1 hour) // changed from 3600000 ms to 60000 ms for minute updates
-        const weatherInterval = setInterval(fetchWeather, 60000)
+        // Set up 15 second refresh for weather updates
+        const weatherInterval = setInterval(fetchWeather, 15000)
 
         // Cleanup interval on component unmount
         return () => clearInterval(weatherInterval)
@@ -119,64 +247,70 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const fetchMacStatus = async () => {
+        const refreshSeconds = 30
+
+        const fetchCatImage = async () => {
             try {
-                const feedUrl = 'https://status.cloud.microsoft/api/feed/mac'
-                const response = await fetch(
-                    `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=10`
-                )
+                setCatLoading(true)
+                setCatError(null)
 
+                const response = await fetch('https://api.thecatapi.com/v1/images/search')
                 if (!response.ok) {
-                    throw new Error('Failed to fetch Microsoft status feed')
+                    throw new Error('Failed to fetch cat image')
                 }
 
-                const data: RSS2JSONResponse = await response.json()
-
-                if (data.status !== 'ok') {
-                    throw new Error('RSS feed error')
+                const data: CatApiItem[] = await response.json()
+                if (!data.length || !data[0].url) {
+                    throw new Error('No cat image received')
                 }
 
-                const items: RSSItem[] = data.items.map((item) => ({
-                    title: item.title,
-                    link: item.link,
-                    pubDate: item.pubDate,
-                    description: item.description,
-                    guid: item.guid || item.link
-                }))
-
-                setMacStatus(items.slice(0, 4))
-                setMacStatusLoading(false)
+                setCatImageUrl(`${data[0].url}?t=${Date.now()}`)
+                setCatCountdown(refreshSeconds)
+                setCatLoading(false)
             } catch (err) {
-                console.error('Microsoft status feed error:', err)
-                setMacStatusError(err instanceof Error ? err.message : 'Failed to load Microsoft status feed')
-                setMacStatusLoading(false)
+                setCatError(err instanceof Error ? err.message : 'Failed to load cat image')
+                setCatLoading(false)
             }
         }
 
-        fetchMacStatus()
+        fetchCatImage()
 
-        const macStatusInterval = setInterval(fetchMacStatus, 3600000)
+        const catInterval = setInterval(fetchCatImage, refreshSeconds * 1000)
 
-        return () => clearInterval(macStatusInterval)
+        const countdownInterval = setInterval(() => {
+            setCatCountdown((prev) => (prev <= 1 ? refreshSeconds : prev - 1))
+        }, 1000)
+
+        return () => {
+            clearInterval(catInterval)
+            clearInterval(countdownInterval)
+        }
     }, [])
 
-    const isOperationalNotice = (item: RSSItem) => {
-        const title = item.title.toLowerCase()
-        const description = item.description
-            .split(/<[^>]*>/g)
-            .join('')
-            .toLowerCase()
+    useEffect(() => {
+        startNewPokemonRound()
+    }, [])
 
-        return (
-            title.includes('microsoft admin center') &&
-            description.includes(
-                'site is updated when service issues are preventing tenant administrators from accessing service health'
-            )
-        )
+    useEffect(() => {
+        const pokemonCountdownInterval = setInterval(() => {
+            setPokemonCountdown((prev) => Math.max(prev - 1, 0))
+        }, 1000)
+
+        return () => clearInterval(pokemonCountdownInterval)
+    }, [])
+
+    useEffect(() => {
+        if (pokemonCountdown === 0) {
+            startNewPokemonRound()
+        }
+    }, [pokemonCountdown])
+
+    let pokemonStatusText = pokemonStatus
+    if (pokemonError) {
+        pokemonStatusText = `Error: ${pokemonError}`
+    } else if (pokemonLoading) {
+        pokemonStatusText = 'Loading pokemon...'
     }
-
-    const showOperationalStatus = macStatus.some(isOperationalNotice)
-    const macStatusIncidents = macStatus.filter((item) => !isOperationalNotice(item))
 
     return (
         <>
@@ -193,42 +327,6 @@ function App() {
                         <h3>Hourly Forecast</h3>
                         <p>First hour temp: {weather.hourly.temperature_2m[0]}°C</p>
                         <p>First hour humidity: {weather.hourly.relative_humidity_2m[0]}%</p>
-                    </div>
-                )}
-            </div>
-
-            <div className='Microsoft-status-card News-section'>
-                <h2>Microsoft Cloud Status - Mac</h2>
-                {macStatusLoading && <p>Loading status updates...</p>}
-                {macStatusError && <p>Error: {macStatusError}</p>}
-                {!macStatusLoading && !macStatusError && showOperationalStatus && (
-                    <div className='operational-status'>
-                        <span className='operational-icon'>V</span>
-                        <span>Everything is operational</span>
-                    </div>
-                )}
-                {!macStatusLoading && !macStatusError && macStatusIncidents.length > 0 && (
-                    <div className='news-grid'>
-                        {macStatusIncidents.map((item, index) => (
-                            <div key={item.guid || index} className='news-item'>
-                                <h3>
-                                    <a href={item.link} target="_blank" rel="noopener noreferrer">
-                                        {item.title}
-                                    </a>
-                                </h3>
-                                <p className='news-date'>
-                                    {new Date(item.pubDate).toLocaleString('nl-NL', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                                <p className='news-description' dangerouslySetInnerHTML={{
-                                    __html: item.description.split(/<[^>]*>/g).join('').substring(0, 120) + '...'
-                                }} />
-                            </div>
-                        ))}
                     </div>
                 )}
             </div>
@@ -263,7 +361,46 @@ function App() {
                         </div>
                     )}
                 </div>
+            </div>
 
+            <div className='randomcatpanel-section'>
+                <div className='randomcat-header'>
+                    <h2>Random Cat</h2>
+                    <span className='cat-countdown'>{catCountdown}s</span>
+                </div>
+                {catLoading && <p>Loading cat...</p>}
+                {catError && <p>Error: {catError}</p>}
+                {!catLoading && !catError && catImageUrl && (
+                    <img src={catImageUrl} alt='Random cat' className='randomcat-image' />
+                )}
+            </div>
+
+            <div className='whoisthispokemon-section'>
+                <div className='pokemon-header'>
+                    <h2>Who's That Pokemon?</h2>
+                    <span className='pokemon-countdown'>{pokemonCountdown}s</span>
+                </div>
+
+                <div className='pokemon-image-wrap'>
+                    <img
+                        className={`pokemon-image ${isPokemonRevealed ? 'revealed' : 'silhouette'}`}
+                        src={pokemonImageUrl}
+                        alt='Pokemon silhouette'
+                    />
+                </div>
+                <div className='pokemon-options'>
+                    {pokemonOptions.map((option) => (
+                        <button
+                            key={option}
+                            className={getPokemonOptionClassName(option)}
+                            onClick={() => handlePokemonGuess(option)}
+                            disabled={pokemonLoading || !!pokemonError || isPokemonRevealed}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
+                <p className='pokemon-status'>{pokemonStatusText}</p>
             </div>
         </>
     )
