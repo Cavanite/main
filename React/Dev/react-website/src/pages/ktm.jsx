@@ -3,8 +3,6 @@ import Footer from "../assets/components/footer"
 import KTMImage from "../images/ktm790duke.JPEG"
 import ScrollToBottom from '../assets/components/ScrollToBottom'
 
-
-
 function KTM() {
     return (
         <>

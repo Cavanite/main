@@ -92,6 +92,7 @@ nav {
 
 .Projects-Grids {
 width: 100%;
+box-sizing: border-box;
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 gap: 2rem;
@@ -114,6 +115,7 @@ padding: 2rem;
 
 .Projects-Grid:hover {
   border-color: #646cff;
+  filter: drop-shadow(0 0 2em #646cffaa);
 }
 
 .contact-profile-pic {
@@ -206,6 +208,13 @@ text-align: center;
 margin-top: 100px;
 padding: 1rem;
 }
+.home-description {
+  text-align: justify;
+  align-items: center;
+  justify-items: center;
+  margin: 100px;
+}
+
 
 .modal {
   background: #1a1a1a;
@@ -374,4 +383,21 @@ object-fit: cover;
 
 .contact-email-row h3 {
   margin: 0;
+}
+
+.projects-back-button {
+  position: sticky;
+}
+
+.projects-back-button:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.project-tech-stack {
+  text-align: left;
+  font-weight: bold;
+}
+.project-docs {
+  text-align: left;
+  font-weight: bold;
 }
