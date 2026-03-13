@@ -1,6 +1,15 @@
 import reactLogo from '../../images/react.svg'
 import profile_pic from '../../images/profile_picture.png'
+import githubLogo from '../../images/github.png'
 import { useNavigate } from 'react-router-dom'
+
+
+const NavItems = [
+    { id: 1, title: "Home", path: "/" },
+    { id: 2, title: "Tools", path: "/tools" },
+    { id: 3, title: "Projects", path: "/projects" },
+    { id: 4, title: "Contact", path: "/contact" },
+]
 
 function Nav() {
     const navigate = useNavigate()
@@ -10,10 +19,20 @@ function Nav() {
                 <img src={reactLogo} className="nav--logo" alt="React logo" />
             </a>
             <img src={profile_pic} className="nav--profile-pic" alt="Profile" />
-            <button className="nav--title" onClick={() => navigate('/')}>Home</button>
-            <button className="nav--title" onClick={() => navigate('/tools')}>Tools</button>
-            <button className="nav--title" onClick={() => navigate('/projects')}>Projects</button>
-            <button className="nav--title" onClick={() => navigate('/contact')}>Contact</button>
+            {NavItems.map(item => (
+                item.external ? (
+                    <a className="nav--title" key={item.id} href={item.path} target="_blank" rel="noopener noreferrer">
+                        {item.title}
+                    </a>
+                ) : (
+                    <button key={item.id} className="nav--title" onClick={() => navigate(item.path)}>
+                        {item.title}
+                    </button>
+                )
+            ))}
+            <a href="https://github.com/Cavanite" target="_blank" rel="noopener noreferrer">
+                <img src={githubLogo} className="nav--icon" alt="GitHub" />
+            </a>
         </nav>
     )
 }
