@@ -15,10 +15,13 @@ function Nav() {
     const navigate = useNavigate()
     return (
         <nav>
+            <img src={profile_pic} className="nav--profile-pic" alt="Profile" />
             <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
                 <img src={reactLogo} className="nav--logo" alt="React logo" />
             </a>
-            <img src={profile_pic} className="nav--profile-pic" alt="Profile" />
+            <a href="https://github.com/Cavanite" target="_blank" rel="noopener noreferrer">
+                <img src={githubLogo} className="nav--icon" alt="GitHub" />
+            </a>
             {NavItems.map(item => (
                 item.external ? (
                     <a className="nav--title" key={item.id} href={item.path} target="_blank" rel="noopener noreferrer">
@@ -30,9 +33,6 @@ function Nav() {
                     </button>
                 )
             ))}
-            <a href="https://github.com/Cavanite" target="_blank" rel="noopener noreferrer">
-                <img src={githubLogo} className="nav--icon" alt="GitHub" />
-            </a>
         </nav>
     )
 }
