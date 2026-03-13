@@ -32,6 +32,11 @@ interface RSS2JSONResponse {
     }[]
 }
 
+/**
+ * Represents a single item returned from the Cat API.
+ * @interface CatApiItem
+ * @property {string} url - The URL of the cat image or resource
+ */
 interface CatApiItem {
     url: string
 }
