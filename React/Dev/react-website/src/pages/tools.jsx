@@ -1,5 +1,5 @@
-import Nav from '../assets/components/nav'
-import Footer from '../assets/components/footer'
+import Nav from '../assets/components/Nav'
+import Footer from '../assets/components/Footer'
 import SpaceSniffer from '../assets/tools-icons/SpaceSniffer.png'
 import SpaceSnifferZip from '../assets/tools/spacesniffer.zip?url'
 import SMTPDiag from '../assets/tools-icons/SMTP_Diag.png'

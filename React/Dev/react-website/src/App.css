@@ -401,3 +401,122 @@ object-fit: cover;
   text-align: left;
   font-weight: bold;
 }
+
+.Dashboard-Sections {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5rem 2rem 2rem;
+}
+
+.Dashboard-Section {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.Dashboard-Section-Header {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.Dashboard-Section-Header h1 {
+  margin: 0;
+}
+
+.Dashboard-Section-Header p {
+  margin: 0.5rem 0 0;
+  color: #a0a0a0;
+}
+
+.Rss-News-Grids {
+  width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+.Rss-News-Grid-Header {
+  grid-column: 1 / -1;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.Rss-News-Grid-Header h2 {
+  margin: 0;
+}
+
+.Rss-News-Grid-Header p {
+  margin: 0.5rem 0 0;
+  color: #a0a0a0;
+}
+
+.Rss-News-State {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem 0;
+  text-align: left;
+}
+
+.Rss-News-Grid-Controls {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+}
+
+.Rss-News-Toggle-Button {
+  border: 1px solid #646cff;
+  border-radius: 999px;
+  background: transparent;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 300ms, box-shadow 300ms, background-color 300ms;
+}
+
+.Rss-News-Toggle-Button:hover {
+  border-color: #8a90ff;
+  background-color: rgba(100, 108, 255, 0.1);
+  box-shadow: 0 0 1.5rem rgba(100, 108, 255, 0.2);
+}
+
+.Rss-News-Grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-height: 320px;
+  box-sizing: border-box;
+  transition: border-color 300ms;
+}
+
+.Rss-News-Grid-item:hover {
+  border-color: #646cff;
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.Rss-News-Grid-Item-Title {
+  margin: 0;
+  font-weight: bold;
+  color: white;
+}
+
+.Rss-News-Grid-Item-Category {
+  margin: 0;
+  color: white;
+}
+
+.Rss-News-Grid-Item-Description {
+  margin: 0;
+  color: #a0a0ff;
+}
+
+.Rss-News-Grid-Item-Date {
+  margin-top: auto;
+  margin-bottom: 0;
+}

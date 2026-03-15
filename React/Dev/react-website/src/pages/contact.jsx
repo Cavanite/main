@@ -1,7 +1,7 @@
-import Nav from "../assets/components/nav"
+import Nav from "../assets/components/Nav"
 import ProfilePic from '../images/profile_picture.png'
 import { useState } from "react"
-import Footer from "../assets/components/footer"
+import Footer from "../assets/components/Footer"
 import ScrollToBottom from '../assets/components/ScrollToBottom'
 
 function CreateCaptcha() {

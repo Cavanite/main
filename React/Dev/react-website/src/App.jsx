@@ -1,15 +1,15 @@
 import './App.css'
-import Nav from './assets/components/nav'
+import Nav from './assets/components/Nav'
 import { Routes, Route } from 'react-router-dom'
-import Projects from './pages/projects'
-import Tools from './pages/tools'
-import Contact from './pages/contact'
-import Footer from './assets/components/footer'
-import RandomCats from './pages/randomcats'
-import KTM from './pages/ktm'
-import ReactWebsite from './pages/projects/react-website'
-import ReactDashboard from './pages/projects/react-dashboard'
+import Projects from './pages/Projects'
+import Tools from './pages/Tools'
+import Contact from './pages/Contact'
+import Footer from './assets/components/Footer'
+import RandomCats from './pages/RandomCats'
+import KTM from './pages/KTM'
+import ReactWebsite from './pages/projects/ReactWebsite'
 import ScrollToBottom from './assets/components/ScrollToBottom'
+import Dashboard from './pages/Dashboard'
 
 const CurrentWork = "Bizway B.V.";
 const CurrentWorkLink = "https://www.bizway.nl/"
@@ -44,8 +44,8 @@ export default function App() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/randomcats" element={<RandomCats />} />
       <Route path="/ktm" element={<KTM />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/projects/react-website" element={<ReactWebsite />} />
-      <Route path="/projects/react-dashboard" element={<ReactDashboard />} />
     </Routes>
   )
 }

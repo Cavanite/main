@@ -1,5 +1,5 @@
-import Nav from "../assets/components/nav"
-import Footer from "../assets/components/footer"
+import Nav from "../assets/components/Nav"
+import Footer from "../assets/components/Footer"
 import ScrollToBottom from "../assets/components/ScrollToBottom"
 
 

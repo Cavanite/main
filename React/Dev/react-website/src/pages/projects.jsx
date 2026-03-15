@@ -1,10 +1,10 @@
-import Nav from "../assets/components/nav"
-import Footer from "../assets/components/footer"
+import Nav from "../assets/components/Nav"
+import Footer from "../assets/components/Footer"
 import ScrollToBottom from '../assets/components/ScrollToBottom'
 
 const projects = [
     { id: 1, Title: "React Website", Description: "A personal website built with React to showcase my projects and skills.", Path: "/projects/react-website" },
-    { id: 2, Title: "React Dashboard", Description: "A simple Desktop Application with some open API's..", Path: "/projects/react-dashboard" },
+    { id: 2, Title: "React Dashboard", Description: "A simple Desktop Application with some open API's..", Path: "/dashboard" },
 ]
 
 function Projects() {

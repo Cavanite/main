@@ -1,7 +1,7 @@
-import Nav from "../../assets/components/nav";
-import Footer from "../../assets/components/footer";
+import Nav from "../../assets/components/Nav";
+import Footer from "../../assets/components/Footer";
 import ScrollToBottom from '../../assets/components/ScrollToBottom'
-import ProjectsBackButton from "../../assets/components/projects-back-button";
+import ProjectsBackButton from "../../assets/components/ProjectsBackButton";
 
 function ReactWebsite() {
     return (
@@ -24,8 +24,8 @@ function ReactWebsite() {
                 </ul>
                 <h4>Docs used:</h4>
                 <ul className="project-docs">
-                    <li><a href="https://www.w3schools.com/css" target="_blank" rel="noopener noreferrer">
-                        W3Schools CSS
+                    <li><a href="https://www.w3schools.com" target="_blank" rel="noopener noreferrer">
+                        W3Schools
                     </a></li>
                 </ul>
             </div>
