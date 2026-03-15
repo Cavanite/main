@@ -3,6 +3,7 @@ import ProfilePic from '../images/profile_picture.png'
 import { useState } from "react"
 import Footer from "../assets/components/Footer"
 import ScrollToBottom from '../assets/components/ScrollToBottom'
+import PayPalMe from "../assets/components/PayPalMe"
 
 function CreateCaptcha() {
     const a = Math.floor(Math.random() * 9) + 1
@@ -125,6 +126,7 @@ function Contact() {
                 {formContent}
             </div>
             <ScrollToBottom />
+            <PayPalMe />
             <Footer />
         </>
     )

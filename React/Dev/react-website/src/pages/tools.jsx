@@ -7,6 +7,7 @@ import SMTPDiagFile from '../assets/tools/SMTP_Diag_Tool.exe?url'
 import CMTrace from '../assets/tools-icons/CMTrace.png'
 import CMTraceFile from '../assets/tools/CMTrace.exe?url'
 import ScrollToBottom from '../assets/components/ScrollToBottom'
+import PayPalMe from '../assets/components/PayPalMe'
 
 
 const VacationCreatorFile = 'https://github.com/Cavanite/Conditional-Access-Vacation-Creator/archive/refs/heads/main.zip'
@@ -36,6 +37,7 @@ function Tools() {
                 ))}
             </div>
             <ScrollToBottom />
+            <PayPalMe />
             <Footer />
         </>
     )

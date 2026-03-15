@@ -2,14 +2,17 @@ import Nav from "../../assets/components/Nav";
 import Footer from "../../assets/components/Footer";
 import ScrollToBottom from '../../assets/components/ScrollToBottom'
 import ProjectsBackButton from "../../assets/components/ProjectsBackButton";
+import PayPalMe from "../../assets/components/PayPalMe";
 
 function ReactWebsite() {
     return (
         <>
             <Nav />
-            <div className="project-detail" style={{ marginTop: '5rem', maxWidth: '700px', margin: '5rem auto', padding: '0 2rem' }}>
+            <div style={{ maxWidth: '700px', margin: '5rem auto 1rem', padding: '0 2rem' }}>
+                <ProjectsBackButton />
+            </div>
+            <div className="project-detail" style={{ maxWidth: '700px', margin: '0 auto', padding: '0 2rem' }}>
                 <div style={{ marginBottom: '2rem' }}>
-                    <ProjectsBackButton />
                     <h2>React Website</h2>
                 </div>
                 <p>This website is a personal project built with React to showcase my work and skills.</p>
@@ -30,6 +33,7 @@ function ReactWebsite() {
                 </ul>
             </div>
             <ScrollToBottom />
+            <PayPalMe />
             <Footer />
         </>
     )
