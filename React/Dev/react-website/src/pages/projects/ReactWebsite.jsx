@@ -11,9 +11,12 @@ function ReactWebsite() {
             <div style={{ maxWidth: '700px', margin: '5rem auto 1rem', padding: '0 2rem' }}>
                 <ProjectsBackButton />
             </div>
+            <br />
             <div className="project-detail" style={{ maxWidth: '700px', margin: '0 auto', padding: '0 2rem' }}>
                 <div style={{ marginBottom: '2rem' }}>
-                    <h2>React Website</h2>
+                    <br />
+                    <h2 style={{ borderBottom: '1px solid white', paddingBottom: '0.5rem' }}>React Website</h2 >
+
                 </div>
                 <p>This website is a personal project built with React to showcase my work and skills.</p>
                 <p>Making this was really fun and educational, allowing me to improve my React and web development skills.</p>
@@ -31,6 +34,7 @@ function ReactWebsite() {
                         W3Schools
                     </a></li>
                 </ul>
+                <br />
             </div>
             <ScrollToBottom />
             <PayPalMe />

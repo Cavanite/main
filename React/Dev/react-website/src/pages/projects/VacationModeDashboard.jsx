@@ -122,12 +122,13 @@ export default function VacationModeDashboard() {
     const [selectedVacationLocIds, setSelectedVacationLocIds] = useState(new Set());
     const [selectedHomeLocId, setSelectedHomeLocId] = useState('');
     const [selectedExistingPolicyId, setSelectedExistingPolicyId] = useState('');
+    const [selectedRevertTargetPolicyId, setSelectedRevertTargetPolicyId] = useState('');
     const [selectedRevertPolicyIds, setSelectedRevertPolicyIds] = useState(new Set());
     const [namedLocationDisplayName, setNamedLocationDisplayName] = useState('');
     const [namedLocationCountryCodes, setNamedLocationCountryCodes] = useState('');
     const [includeUnknownCountries, setIncludeUnknownCountries] = useState(false);
     const [countrySearchText, setCountrySearchText] = useState('');
-    const [createVacationNamedLocationEnabled, setCreateVacationNamedLocationEnabled] = useState(true);
+    const [createVacationNamedLocationEnabled, setCreateVacationNamedLocationEnabled] = useState(false);
 
     // Policy fields
     const [ticketNumber, setTicketNumber] = useState('');
@@ -141,6 +142,7 @@ export default function VacationModeDashboard() {
     const [statusMessages, setStatusMessages] = useState(['Application started. Sign in was successful.']);
     const [loading, setLoading] = useState(false);
     const statusRef = useRef(null);
+    const initialLoadStartedRef = useRef(false);
 
     useEffect(() => {
         if (statusRef.current) statusRef.current.scrollTop = statusRef.current.scrollHeight;
@@ -163,7 +165,8 @@ export default function VacationModeDashboard() {
                     `MULTICOUNTRY-${selectedLocs.length}`;
         const selectedUsrs = users.filter(u => selectedUserIds.has(u.id));
         if (selectedUsrs.length === 0) return `GEO-USERNAME-${country}-${ticket}-${start}-${end}-VACATIONMODE`;
-        const username = selectedUsrs[0].upn.split('@')[0];
+        const usernameSource = selectedUsrs[0].upn || selectedUsrs[0].displayName || 'USERNAME';
+        const username = usernameSource.split('@')[0];
         if (selectedUsrs.length === 1) return `GEO-${username}-${country}-${ticket}-${start}-${end}-VACATIONMODE`;
         return `GEO-${username}-Plus${selectedUsrs.length - 1}-${country}-${ticket}-${start}-${end}-VACATIONMODE`;
     })();
@@ -182,6 +185,10 @@ export default function VacationModeDashboard() {
             }
             const filtered = allUsers
                 .filter(u => !shouldExclude(u.displayName, u.userPrincipalName))
+                .map(u => ({
+                    ...u,
+                    upn: u.userPrincipalName || u.upn || ''
+                }))
                 .sort((a, b) => a.displayName.localeCompare(b.displayName));
             setUsers(filtered);
             addStatus(`SUCCESS: Loaded ${filtered.length} users (${allUsers.length - filtered.length} filtered out)`);
@@ -231,6 +238,8 @@ export default function VacationModeDashboard() {
     }, [addStatus]);
 
     useEffect(() => {
+        if (initialLoadStartedRef.current) return;
+        initialLoadStartedRef.current = true;
         loadUsers();
         loadNamedLocations();
         loadCaPolicies();
@@ -439,8 +448,15 @@ export default function VacationModeDashboard() {
     };
 
     const signOut = async () => {
-        await Providers.globalProvider.logout();
-        navigate('/projects/vacation-mode-creator');
+        try {
+            if (Providers.globalProvider) {
+                await Providers.globalProvider.logout();
+            }
+        } catch (e) {
+            addStatus(`WARNING: Sign out redirect failed - ${e.message}`);
+        } finally {
+            navigate('/projects/vacation-mode-creator', { replace: true });
+        }
     };
 
     const revertVacationMode = async () => {
@@ -449,17 +465,23 @@ export default function VacationModeDashboard() {
             alert('Please select at least one vacation mode policy to revert.');
             return;
         }
+        if (!selectedRevertTargetPolicyId) {
+            alert('Please select the geofencing policy where users must be included again.');
+            return;
+        }
 
         const selectedNames = vacationPolicies
             .filter(p => selectedRevertPolicyIds.has(p.id))
             .map(p => p.name);
+        const revertTargetPolicyName = caPolicies.find(p => p.id === selectedRevertTargetPolicyId)?.name || 'selected geofencing policy';
 
         const confirmMessage =
             `Are you sure you want to revert these vacation mode policies?\n\n` +
             `Policies to Delete (${policyIds.length}):\n- ${selectedNames.join('\n- ')}\n\n` +
+            `Restore users in: ${revertTargetPolicyName}\n\n` +
             `This will:\n` +
             `1. DELETE the selected vacation mode policies\n` +
-            `2. REMOVE affected users from the selected main geofencing policy (if selected)\n\n` +
+            `2. REMOVE affected users from the selected geofencing policy exclusion list\n\n` +
             `This action cannot be undone.\n\nProceed?`;
 
         if (!globalThis.confirm(confirmMessage)) {
@@ -483,14 +505,14 @@ export default function VacationModeDashboard() {
             }
             addStatus(`SUCCESS: Deleted ${policyIds.length} vacation mode polic${policyIds.length > 1 ? 'ies' : 'y'}`);
 
-            if (selectedExistingPolicyId && allUsersToRestore.size > 0) {
+            if (allUsersToRestore.size > 0) {
                 try {
-                    const mainPolicy = await callGraph('GET', `/identity/conditionalAccess/policies/${selectedExistingPolicyId}`);
+                    const mainPolicy = await callGraph('GET', `/identity/conditionalAccess/policies/${selectedRevertTargetPolicyId}`);
                     const currentExcluded = mainPolicy?.conditions?.users?.excludeUsers || [];
                     const usersToRemove = [...allUsersToRestore];
                     const updatedExcluded = currentExcluded.filter(id => !usersToRemove.includes(id));
 
-                    await callGraph('PATCH', `/identity/conditionalAccess/policies/${selectedExistingPolicyId}`, {
+                    await callGraph('PATCH', `/identity/conditionalAccess/policies/${selectedRevertTargetPolicyId}`, {
                         conditions: {
                             ...mainPolicy.conditions,
                             users: {
@@ -502,7 +524,7 @@ export default function VacationModeDashboard() {
                         sessionControls: mainPolicy.sessionControls,
                         state: mainPolicy.state,
                     });
-                    const mainPolicyName = caPolicies.find(p => p.id === selectedExistingPolicyId)?.name || 'selected main policy';
+                    const mainPolicyName = caPolicies.find(p => p.id === selectedRevertTargetPolicyId)?.name || 'selected geofencing policy';
                     addStatus(`SUCCESS: Restored ${usersToRemove.length} user(s) in '${mainPolicyName}' exclusion list`);
                 } catch (e) {
                     addStatus(`ERROR: Failed to update main geofencing policy - ${e.message}`);
@@ -510,6 +532,7 @@ export default function VacationModeDashboard() {
             }
 
             setSelectedRevertPolicyIds(new Set());
+            setSelectedRevertTargetPolicyId('');
             await loadCaPolicies();
             alert('Vacation mode policy revert completed.');
         } catch (e) {
@@ -711,7 +734,7 @@ export default function VacationModeDashboard() {
                                 <h3>Revert Vacation Mode</h3>
                                 <button className="vmc-btn vmc-btn-sm" onClick={loadCaPolicies} disabled={loading}>Refresh</button>
                             </div>
-                            <p className="vmc-hint">Select vacation mode policy/policies to delete and restore users from main geofencing exclusions.</p>
+                            <p className="vmc-hint">Select vacation mode policy/policies to delete, then choose the geofencing policy where users should be included again.</p>
                             <div className="vmc-list vmc-list-sm">
                                 {vacationPolicies.map(p => (
                                     <label key={p.id} className={`vmc-list-item ${selectedRevertPolicyIds.has(p.id) ? 'vmc-selected' : ''}`}>
@@ -720,6 +743,18 @@ export default function VacationModeDashboard() {
                                     </label>
                                 ))}
                                 {vacationPolicies.length === 0 && <div className="vmc-empty">No vacation mode policies found</div>}
+                            </div>
+                            <div className="vmc-field" style={{ marginTop: '0.75rem' }}>
+                                <label htmlFor="revert-target-policy">Select Geofencing Policy To Restore Users In</label>
+                                <select
+                                    id="revert-target-policy"
+                                    className="vmc-select"
+                                    value={selectedRevertTargetPolicyId}
+                                    onChange={e => setSelectedRevertTargetPolicyId(e.target.value)}
+                                >
+                                    <option value="">-- Select geofencing policy --</option>
+                                    {caPolicies.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                </select>
                             </div>
                         </div>
 
