@@ -8,4 +8,5 @@
     "editor.cursorWidth": 3,
     "azureTerraform.checkTerraformCmd": false,
     "codeQL.githubDatabase.update": "never",
+    "codeQL.githubDatabase.download": "never",
 }
