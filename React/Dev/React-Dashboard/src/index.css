@@ -1,0 +1,406 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.card {
+  padding: 1.5em;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+}
+
+.Dashboard {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.Weather-card {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  max-width: 400px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.Microsoft-status-card {
+  position: fixed;
+  top: 420px;
+  left: 20px;
+  width: 400px;
+  min-height: 180px;
+}
+
+.Azure-status-card {
+  position: fixed;
+  top: 80px;
+  left: 460px;
+  max-width: 500px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.Weather-card h2,
+.Azure-status-card h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.Weather-card h3 {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.Weather-card p {
+  margin: 0.5rem 0;
+}
+
+.status-item {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.status-item h3 a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+.status-item h3 a:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.status-date {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0.25rem 0;
+}
+
+.status-item p {
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.Feeds-panel {
+  position: fixed;
+  top: 80px;
+  left: 460px;
+  right: 20px;
+  bottom: 260px;
+  overflow-y: auto;
+  flex-direction: column;
+  display: flex;
+  gap: 1rem;
+}
+
+.News-section {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 5px solid rgba(255, 255, 255, 0.468);
+}
+
+.News-section h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.news-item {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.news-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(100, 108, 255, 0.5);
+}
+
+.news-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.news-item h3 a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+.news-item h3 a:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.news-date {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.news-description {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.operational-status {
+  display: inline-flex;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  background: rgba(22, 101, 52, 0.55);
+  color: #f0fdf4;
+  font-weight: 600;
+}
+
+.operational-icon {
+  color: #22c55e;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.randomcatpanel-section {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 220px;
+  height: 220px;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.468);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.randomcatpanel-section h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.randomcatpanel-section p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.randomcat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cat-countdown {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.randomcat-image {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.whoisthispokemon-section {
+  position: fixed;
+  right: 320px;
+  bottom: 20px;
+  width: 250px;
+  height: 220px;
+  padding: 0.8rem;
+  background: #ffffff08;
+  border-radius: 12px;
+  border: 3px solid #888;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow: hidden;
+  display: flex;
+}
+
+.pokemon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pokemon-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pokemon-countdown {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  font-weight: 600;
+}
+
+.pokemon-image-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff08;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pokemon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: optimizeQuality;
+  transition: filter 0.25s ease;
+
+}
+
+.pokemon-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.pokemon-option-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.pokemon-option-btn:hover {
+  border-color: rgba(100, 108, 255, 0.6);
+}
+
+.pokemon-option-btn.correct {
+  border-color: rgba(34, 197, 94, 0.8);
+  background: rgba(22, 101, 52, 0.35);
+}
+
+.pokemon-option-btn.wrong {
+  border-color: rgba(239, 68, 68, 0.8);
+  background: rgba(127, 29, 29, 0.35);
+}
+
+.pokemon-status {
+  margin: 0;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+@keyframes pokemon-beep {
+  0%, 100% {
+    filter: brightness(0) drop-shadow(0 0 0 rgba(255, 255, 255, 0));
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    filter: brightness(0) drop-shadow(0 0 8px rgba(255, 255, 255, 0.75));
+    transform: scale(1.03);
+    opacity: 0.88;
+  }
+}
+
+.pokemon-image.silhouette {
+  animation: pokemon-beep 0.9s ease-in-out infinite;
+}
+
+.pokemon-image.revealed {
+  animation: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pokemon-image.silhouette {
+    animation: none;
+  }
+}
