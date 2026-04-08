@@ -26,7 +26,6 @@ function Projects() {
                     </a>
                 ))}
             </div>
-            <ScrollToBottom />
             <PayPalMe />
             <Footer />
         </>
