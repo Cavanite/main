@@ -1,40 +1,47 @@
-#############################################
-#                                           #                       
-#          Script by Bert de Zeeuw          #
-#    visit https://github.com/Cavanite      # 
-#                                           #                       
-#############################################
+Import-Module Microsoft.Graph.Beta.Identity.DirectoryManagement
+Import-Module Microsoft.Graph.Beta.Groups
 
-#Parameter for AD Security Group
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Group.Read.All"
+
 $GroupName = "Group Creators"
+$AllowGroupCreation = "False"
 
-#Connect to Azure AD
-Connect-AzureAD
+$settingsObjectID = (Get-MgBetaDirectorySetting | Where-object -Property Displayname -Value "Group.Unified" -EQ).id
 
-#Get the ID of Allowed AD Group
-$GroupID = (Get-AzureADGroup -SearchString $GroupName).ObjectId
-
-#Get the Office 365 Group Creation Settings ID
-$GroupCreationSettingsID = (Get-AzureADDirectorySetting | Where-object {$_.Displayname -Eq "Group.Unified"}).Id
-
-#Create Group Creation Settings, If it doesn't exist
-If(!$GroupCreationSettingsID)
+if(!$settingsObjectID)
 {
-    #Create Settings from Template
-    $Template = Get-AzureADDirectorySettingTemplate | Where-Object {$_.DisplayName -eq "Group.Unified"}
-    $DirectorySettings = $Template.CreateDirectorySetting()
-    New-AzureADDirectorySetting -DirectorySetting $DirectorySettings
-    $GroupCreationSettingsID = (Get-AzureADDirectorySetting | Where-object {$_.Displayname -Eq "Group.Unified"}).Id
+    $params = @{
+      templateId = "62375ab9-6b52-47ed-826b-58e47e0e304b"
+      values = @(
+            @{
+                   name = "EnableMSStandardBlockedWords"
+                   value = $true
+             }
+              )
+         }
+    
+    New-MgBetaDirectorySetting -BodyParameter $params
+    
+    $settingsObjectID = (Get-MgBetaDirectorySetting | Where-object -Property Displayname -Value "Group.Unified" -EQ).Id
 }
 
-#Apply Settings
-$GroupCreationSettings = Get-AzureADDirectorySetting -Id $GroupCreationSettingsID
-$GroupCreationSettings["EnableGroupCreation"] = "True"
-$GroupCreationSettings["GroupCreationAllowedGroupId"] = $GroupID
+ 
+$groupId = (Get-MgBetaGroup -all | Where-object {$_.displayname -eq $GroupName}).Id
 
-#Commit Settings
-Set-AzureADDirectorySetting -Id $GroupCreationSettingsID -DirectorySetting $GroupCreationSettings
+$params = @{
+    templateId = "62375ab9-6b52-47ed-826b-58e47e0e304b"
+    values = @(
+        @{
+            name = "EnableGroupCreation"
+            value = $AllowGroupCreation
+        }
+        @{
+            name = "GroupCreationAllowedGroupId"
+            value = $groupId
+        }
+    )
+}
 
-#Verify Settings
-(Get-AzureADDirectorySetting -Id $GroupCreationSettingsID).Values
+Update-MgBetaDirectorySetting -DirectorySettingId $settingsObjectID -BodyParameter $params
 
+(Get-MgBetaDirectorySetting -DirectorySettingId $settingsObjectID).Values
